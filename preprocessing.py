@@ -27,11 +27,9 @@ def load_reasoning_data(setname):
     return total_item
 
 
-def reasoning_batch_generator(setname,batch_size=100,epoch=1):
-    assert setname in ['train','dev','test']
-
+def reasoning_batch_generator(batch_size=100,epoch=1):
     pivot = 0 # idx in one epoch
-    total_data = load_reasoning_data(setname)
+    total_data = load_reasoning_data('train')
     shuffle(total_data)
 
     for ep in range(epoch):
@@ -42,6 +40,10 @@ def reasoning_batch_generator(setname,batch_size=100,epoch=1):
             if len(batch)==batch_size:
                 yield batch
                 batch = [] # ignore the remaining chunk?
+
+
+def reasoning_test_data_load(setname):
+    pass
 
 
 def nli_load_raw_file():
