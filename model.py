@@ -18,7 +18,13 @@ class Model():
         reason = tf.placeholder(tf.float32, [None, None, MyConfig.word_embed_vector_len],name='reason_input')
         w0 = tf.placeholder(tf.float32, [None, None, MyConfig.word_embed_vector_len],name='W0_input')
         w1 = tf.placeholder(tf.float32, [None, None, MyConfig.word_embed_vector_len],name='W1_input')
-        label = tf.placeholder(tf.float32, [None, 2])
+        label = tf.placeholder(tf.float32, [None, 2],name='Label')
+
+    def _input_string_manager(self,data):
+        pass
+
+    def _input_label_manager(self,label):
+        pass
 
     def _build_op(self):
         pass

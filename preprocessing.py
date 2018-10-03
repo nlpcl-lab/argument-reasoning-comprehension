@@ -4,7 +4,7 @@ from random import shuffle
 from gensim.models import FastText
 
 
-def reasoning_load_raw_file(fname,is_test=False):
+def read_reasoning_raw_file(fname, is_test=False):
     not_in_test_kname = 'correctLabelW0orW1'
     data = []
     with open(fname,'r') as f:
@@ -20,8 +20,8 @@ def reasoning_load_raw_file(fname,is_test=False):
     return data
 
 
-def load_data(setname):
-    raw_data = reasoning_load_raw_file(MyConfig.reasoning_tdv_fname_list[MyConfig.tdv_map[setname]])
+def load_reasoning_data(setname):
+    raw_data = read_reasoning_raw_file(MyConfig.reasoning_tdv_fname_list[MyConfig.tdv_map[setname]])
     used_k = ['warrant0', 'warrant1', 'correctLabelW0orW1', 'reason', 'claim']
     total_item = [[item[k] for k in used_k] for item in raw_data]
     return total_item
@@ -31,7 +31,7 @@ def reasoning_batch_generator(setname,batch_size=100,epoch=1):
     assert setname in ['train','dev','test']
 
     pivot = 0 # idx in one epoch
-    total_data = load_data(setname)
+    total_data = load_reasoning_data(setname)
     shuffle(total_data)
 
     for ep in range(epoch):
@@ -58,7 +58,6 @@ def load_word_embedding_table(model_type):
     Returns:
         vocab_matrix : numpy array, shape : [vocab_size, embedding_dimension]
         word_idx : {'word':'idx'} dictionary. 'idx' indicates the index of 'word' in vocab_matrix
-
     """
     assert model_type in ['GLOVE','FASTTEXT']
     if model_type == 'GLOVE':
