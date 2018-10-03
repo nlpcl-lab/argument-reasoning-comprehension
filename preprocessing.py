@@ -43,7 +43,9 @@ def reasoning_batch_generator(batch_size=100,epoch=1):
 
 
 def reasoning_test_data_load(setname):
-    pass
+    assert setname in ['dev','test']
+    total_data = load_reasoning_data(setname)
+    return total_data
 
 
 def nli_load_raw_file():
