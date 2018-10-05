@@ -13,7 +13,7 @@ class MyConfig:
     word_embed_glove_binary_fname = './data/glove.6B/glove.6B.300d.txt'
     word_embed_vector_len = 300
 
-    # Below is for Hyperparameter tunings
+    # Hyperparameters
     epoch = 50
     batch_size = 100
     lr = 0.001

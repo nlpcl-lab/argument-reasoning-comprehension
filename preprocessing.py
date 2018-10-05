@@ -20,6 +20,13 @@ def read_reasoning_raw_file(fname, is_test=False):
     return data
 
 
+def batch_idx_mapping(word_idx, batch):
+    # TODO
+    """Batch's sentence into array of index"""
+    """split dict into into 4(or 5) different array"""
+    pass
+
+
 def load_reasoning_data(setname):
     raw_data = read_reasoning_raw_file(MyConfig.reasoning_tdv_fname_list[MyConfig.tdv_map[setname]])
     used_k = ['warrant0', 'warrant1', 'correctLabelW0orW1', 'reason', 'claim']
@@ -27,10 +34,9 @@ def load_reasoning_data(setname):
     return total_item
 
 
-def reasoning_batch_generator(batch_size=100,epoch=1):
+def reasoning_batch_generator(batch_size=100,epoch=1, word_idx=None):
     pivot = 0 # idx in one epoch
     total_data = load_reasoning_data('train')
-    shuffle(total_data)
 
     for ep in range(epoch):
         print('---Epoch {}/{}---'.format(ep,epoch))
@@ -38,13 +44,15 @@ def reasoning_batch_generator(batch_size=100,epoch=1):
         for idx,item in enumerate(total_data):
             batch.append(item)
             if len(batch)==batch_size:
+                batch = batch_idx_mapping(word_idx, batch)
                 yield batch
                 batch = [] # ignore the remaining chunk?
 
 
-def reasoning_test_data_load(setname):
+def reasoning_test_data_load(setname, word_idx=None):
     assert setname in ['dev','test']
     total_data = load_reasoning_data(setname)
+    total_data = batch_idx_mapping(word_idx, total_data)
     return total_data
 
 
