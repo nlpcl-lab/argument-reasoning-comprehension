@@ -60,10 +60,9 @@ class Model():
         logits = tf.concat([w0_prob,w1_prob],axis=1)
         self.cost, self.train_op, self.acc = self._build_ops(logits, labels)
 
-
     def _build_ops(self,logits,targets):
         cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=targets), name='loss') + tf.losses.get_regularization_loss()
-        train_op = tf.train.AdamOptimizer(learning_rate=self.learning_rate).minimize(cost,global_step=self.global_step,name='OP')
+        train_op = tf.train.AdamOptimizer(learning_rate=MyConfig.lr).minimize(cost,global_step=self.global_step,name='OP')
         acc = tf.reduce_mean(tf.cast(tf.equal(tf.argmax(targets,1),tf.argmax(logits,1)),tf.float32))
 
         tf.summary.scalar('acc', acc)
@@ -79,10 +78,8 @@ class Model():
         activation_layer = tf.nn.relu(drop_layer,name='relu1')
         return activation_layer
 
-
     def _build_cells(self, keep_rate):
         total_cell = [tf.nn.rnn_cell.MultiRNNCell([self._cell(keep_rate) for _ in range(MyConfig.rnn_layer)]) for i in range(8)]
-
 
     def _cell(self, keep_rate):
         cell = tf.nn.rnn_cell.BasicLSTMCell(MyConfig.rnn_hidden)
