@@ -29,6 +29,7 @@ class Model():
         with tf.variable_scope('ciam_enc'):
             claim_outputs, claim_states = tf.nn.bidirectional_dynamic_rnn(claim_enc_fw, claim_enc_bw, claim,
                                                                           dtype=tf.float32)
+        auto commit test 
 
     def _build_op(self):
         pass
