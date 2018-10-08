@@ -22,7 +22,7 @@ class Model():
         reason = tf.placeholder(tf.float32, [None, None, MyConfig.word_embed_vector_len],name='reason_input')
         w0 = tf.placeholder(tf.float32, [None, None, MyConfig.word_embed_vector_len],name='W0_input')
         w1 = tf.placeholder(tf.float32, [None, None, MyConfig.word_embed_vector_len],name='W1_input')
-        label = tf.placeholder(tf.float32, [None, 2],name='Label')
+        labels = tf.placeholder(tf.float32, [None, 2],name='Label')
 
         claim_enc_fw, claim_enc_bw, reason_enc_fw, reason_enc_bw, w0_enc_fw, w0_enc_bw, w1_enc_fw, w1_enc_bw = self._build_cells(self.rnn_keeprate)
         self._build_cells(self.rnn_keeprate)
@@ -52,18 +52,26 @@ class Model():
         concat0 = tf.concat([claim_avg, reason_avg, w0_avg], axis=1)
         concat1 = tf.concat([claim_avg, reason_avg, w1_avg], axis=1)
 
-        
+        h0 = self._fully_connected(concat0, MyConfig.fcn_hidden)
+        h1 = self._fully_connected(concat1, MyConfig.fcn_hidden)
+        w0_prob = self._fully_connected(h0, 1)
+        w1_prob = self._fully_connected(h1, 1)
+
+        logits = tf.concat([w0_prob,w1_prob],axis=1)
+        self.cost, self.train_op, self.acc = self._build_ops(logits, labels)
 
 
+    def _build_ops(self,logits,targets):
+        cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=targets), name='loss') + tf.losses.get_regularization_loss()
+        train_op = tf.train.AdamOptimizer(learning_rate=self.learning_rate).minimize(cost,global_step=self.global_step,name='OP')
+        acc = tf.reduce_mean(tf.cast(tf.equal(tf.argmax(targets,1),tf.argmax(logits,1)),tf.float32))
 
-
-
-
-    def _build_op(self):
-        pass
+        tf.summary.scalar('acc', acc)
+        tf.summary.scalar('cost',cost)
+        return cost, train_op, acc
 
     def _fully_connected(self,input_data,output_dim):
-        dense_layer = tf.layers.dense(concat, output_dim, activation=None,
+        dense_layer = tf.layers.dense(input_data, output_dim, activation=None,
                                  kernel_initializer=tf.contrib.layers.xavier_initializer(),
                                  kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=self.l2_coeffi),
                                  name='dense1')
