@@ -24,7 +24,7 @@ class Model():
         w1 = tf.placeholder(tf.float32, [None, None, MyConfig.word_embed_vector_len],name='W1_input')
         label = tf.placeholder(tf.float32, [None, 2],name='Label')
 
-        claim_enc_fw, claim_enc_bw, reason_enc_fw, reason_enc_bw, w0_enc_fw, w0_enc_bw, claim_enc_fw, claim_enc_bw = self._build_cells(self.rnn_keeprate)
+        claim_enc_fw, claim_enc_bw, reason_enc_fw, reason_enc_bw, w0_enc_fw, w0_enc_bw, w1_enc_fw, w1_enc_bw = self._build_cells(self.rnn_keeprate)
         self._build_cells(self.rnn_keeprate)
         with tf.variable_scope('ciam_enc'):
             claim_outputs, claim_states = tf.nn.bidirectional_dynamic_rnn(claim_enc_fw, claim_enc_bw, claim,
@@ -34,11 +34,35 @@ class Model():
                                                                           dtype=tf.float32)
         with tf.variable_scope('w0_enc'):
             w0_outputs, w0_states = tf.nn.bidirectional_dynamic_rnn(w0_enc_fw, w0_enc_bw, w0,
-                                                                          dtype=tf.float32)
+                                                                    dtype=tf.float32)
+        with tf.variable_scope('w1_enc'):
+            w1_outputs, w1_states = tf.nn.bidirectional_dynamic_rnn(w1_enc_fw, w1_enc_bw, w1,
+                                                                    dtype=tf.float32)
+
+        claim_bi = tf.concat(claim_outputs, axis=2)
+        reason_bi = tf.concat(reason_outputs, axis=2)
+        w0_bi = tf.concat(w0_outputs, axis=2)
+        w1_bi = tf.concat(w1_outputs, axis=2)
+
+        claim_avg = tf.reduce_mean(claim_bi, 1)
+        reason_avg = tf.reduce_mean(reason_bi, 1)
+        w0_avg = tf.reduce_mean(w0_bi, 1)
+        w1_avg = tf.reduce_mean(w1_bi, 1)
+
+        h = tf.concat([claim_avg,reason_avg,w0_avg,w1_avg],axis=1)
+
 
     def _build_op(self):
         pass
 
+    def _build_cells(self, keep_rate):
+        total_cell = [tf.nn.rnn_cell.MultiRNNCell([self._cell(keep_rate) for _ in range(MyConfig.rnn_layer)]) for i in range(8)]
+
+
+    def _cell(self, keep_rate):
+        cell = tf.nn.rnn_cell.BasicLSTMCell(MyConfig.rnn_hidden)
+        cell = tf.nn.rnn_cell.DropoutWrapper(cell,output_keep_prob=keep_rate)
+        return cell
 
     def write_summary(self):
         pass
