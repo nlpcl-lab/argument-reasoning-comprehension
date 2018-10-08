@@ -24,15 +24,17 @@ class Model():
         w1 = tf.placeholder(tf.float32, [None, None, MyConfig.word_embed_vector_len],name='W1_input')
         label = tf.placeholder(tf.float32, [None, 2],name='Label')
 
-        claim_enc_fw, claim_enc_bw, reason_enc_fw, reason_enc_bw, claim_enc_fw, claim_enc_bw, claim_enc_fw, claim_enc_bw = self._build_cells(self.rnn_keeprate)
+        claim_enc_fw, claim_enc_bw, reason_enc_fw, reason_enc_bw, w0_enc_fw, w0_enc_bw, claim_enc_fw, claim_enc_bw = self._build_cells(self.rnn_keeprate)
         self._build_cells(self.rnn_keeprate)
         with tf.variable_scope('ciam_enc'):
             claim_outputs, claim_states = tf.nn.bidirectional_dynamic_rnn(claim_enc_fw, claim_enc_bw, claim,
                                                                           dtype=tf.float32)
         with tf.variable_scope('reason_enc'):
-            reason_outputs, reason_states = tf.nn.bidirectional_dynamic_rnn(reason_enc_fw, reason_enc_bw, claim,
+            reason_outputs, reason_states = tf.nn.bidirectional_dynamic_rnn(reason_enc_fw, reason_enc_bw, reason,
                                                                           dtype=tf.float32)
-
+        with tf.variable_scope('w0_enc'):
+            w0_outputs, w0_states = tf.nn.bidirectional_dynamic_rnn(w0_enc_fw, w0_enc_bw, w0,
+                                                                          dtype=tf.float32)
 
     def _build_op(self):
         pass
