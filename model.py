@@ -49,11 +49,28 @@ class Model():
         w0_avg = tf.reduce_mean(w0_bi, 1)
         w1_avg = tf.reduce_mean(w1_bi, 1)
 
-        h = tf.concat([claim_avg,reason_avg,w0_avg,w1_avg],axis=1)
+        concat0 = tf.concat([claim_avg, reason_avg, w0_avg], axis=1)
+        concat1 = tf.concat([claim_avg, reason_avg, w1_avg], axis=1)
+
+        
+
+
+
+
 
 
     def _build_op(self):
         pass
+
+    def _fully_connected(self,input_data,output_dim):
+        dense_layer = tf.layers.dense(concat, output_dim, activation=None,
+                                 kernel_initializer=tf.contrib.layers.xavier_initializer(),
+                                 kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=self.l2_coeffi),
+                                 name='dense1')
+        drop_layer = tf.layers.dropout(dense_layer, rate=self.fcn_droprate, name='drop1')
+        activation_layer = tf.nn.relu(drop_layer,name='relu1')
+        return activation_layer
+
 
     def _build_cells(self, keep_rate):
         total_cell = [tf.nn.rnn_cell.MultiRNNCell([self._cell(keep_rate) for _ in range(MyConfig.rnn_layer)]) for i in range(8)]
