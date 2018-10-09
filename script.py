@@ -1,5 +1,5 @@
 from util import option_parser
-from preprocessing import reasoning_batch_generator, reasoning_test_data_load, load_word_embedding_table, encode_batch
+from preprocessing import reasoning_batch_generator, reasoning_test_data_load, load_word_embedding_table
 from Config import MyConfig
 import tensorflow as tf
 from model import Model
@@ -40,10 +40,10 @@ def test(word_embed):
 
 def main():
     run_type = option_parser()  # train/test
-    embed_matrix, word_idx = load_word_embedding_table('GLOVE')
+    word_embed = load_word_embedding_table('GLOVE')
 
     if run_type == 'train':
-        train(batch_size=MyConfig.batch_size, epoch=MyConfig.epoch)
+        train(batch_size=MyConfig.batch_size, epoch=MyConfig.epoch, word_embed=word_embed)
 
     if run_type == 'test':
         test()
