@@ -75,6 +75,7 @@ def reasoning_test_data_load(setname, word_idx=None):
     assert setname in ['dev','test']
     total_data = load_reasoning_data(setname)
     total_data = batch_idx_mapping(word_idx, total_data)
+    total_data = split_hori(total_data)
     return total_data
 
 

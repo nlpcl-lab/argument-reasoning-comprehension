@@ -12,7 +12,7 @@ NeuralNet Script file
 def train(batch_size, epoch, word_embed):
     embed_matrix,word_idx = word_embed
     train_data_gen = reasoning_batch_generator(batch_size, epoch, word_idx)
-    dev_raw = reasoning_test_data_load('dev', word_idx)
+    dev_batch = reasoning_test_data_load('dev', word_idx)
     model = Model(embed_matrix)
 
     with tf.Session() as sess:
@@ -28,8 +28,13 @@ def train(batch_size, epoch, word_embed):
 
         for step, batch in enumerate(train_data_gen):
             #  ['warrant0', 'warrant1', 'correctLabelW0orW1', 'reason', 'claim']
-            _, cost = model.train(sess, batch)
-            if step%20==0: print('Step: {}\nCost: {}'.format(step,cost))
+            _, cost, acc = model.train(sess, batch)
+            if step%20==0:
+                print('Step: {}\nCost: {}'.format(step,cost))
+                train_logits, train_acc = model.test(sess, batch, write_logs=True, writer=writer1)
+                dev_logits, dev_acc = model.test(sess, dev_batch, write_logs=True, writer=writer2)
+                print("train_acc: {}, dev_acc: {}".format(train_acc, dev_acc))
+
 
 
 
