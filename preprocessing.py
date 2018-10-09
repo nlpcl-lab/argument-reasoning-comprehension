@@ -58,7 +58,7 @@ def reasoning_batch_generator(batch_size=100,epoch=1, word_idx=None):
             batch.append(item)
             if len(batch)==batch_size:
                 batch = batch_idx_mapping(word_idx, batch)
-                batch = split_hori(batch)
+                batch = split_hori(batch, word_idx)
                 yield batch
                 batch = [] # ignore the remaining chunk?
 
@@ -68,7 +68,22 @@ def split_hori(batch):
     for b in batch:
         for idx,el in enumerate(b):
             items[idx].append(el)
+    for i,el in enumerate(items): items[i] = padding(el,word_idx)
     return items
+
+
+def padding(batch, word_idx):
+    PAD_KEY = word_idx['_PAD_']
+    maxlen = max_len(batch)
+    for idx,item in enumerate(batch):
+        batch[idx] = item + (maxlen-len(item))*[PAD_KEY]
+    return batch
+
+def max_len(batch):
+    max_len = 0
+    for i in batch:
+        if len(i)>max_len:max_len=len(i)
+    return max_len
 
 
 def reasoning_test_data_load(setname, word_idx=None):

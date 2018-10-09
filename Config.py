@@ -16,6 +16,7 @@ class MyConfig:
     train_dir = './house'
 
     # Hyperparameters
+    l2_coeffi = 0.1
     rnn_train_keeprate = 0.5
     fcn_train_keeprate = 0.5
     epoch = 50

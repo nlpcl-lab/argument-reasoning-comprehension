@@ -9,20 +9,23 @@ class Model():
     def __init__(self, embed_matrix):
         self.word_embedding = tf.Variable(embed_matrix,trainable=False,dtype=tf.float32,name='word_embedding')
         self.global_step = tf.Variable(0, trainable=False, name='global_step')
-        self._build_model()
-        self.saver = tf.train.Saver(tf.global_variables())
 
         #Dropout rate
         self.rnn_keeprate = tf.placeholder_with_default(1.0, shape=(), name='rnn_keep_rate')
         self.fcn_keeprate = tf.placeholder_with_default(1.0, shape=(), name='fcn_keep_rate')
 
+        self._build_model()
+        self.saver = tf.train.Saver(tf.global_variables())
+
     def _build_model(self):
         # TODO: Make another input receiving function.
-        claim = tf.placeholder(tf.float32, [None, None, MyConfig.word_embed_vector_len],name='claim_input')
-        reason = tf.placeholder(tf.float32, [None, None, MyConfig.word_embed_vector_len],name='reason_input')
-        w0 = tf.placeholder(tf.float32, [None, None, MyConfig.word_embed_vector_len],name='W0_input')
-        w1 = tf.placeholder(tf.float32, [None, None, MyConfig.word_embed_vector_len],name='W1_input')
-        labels = tf.placeholder(tf.float32, [None, 2],name='Label')
+        claim = tf.placeholder(tf.int64, [None, None],name='claim_input')
+        reason = tf.placeholder(tf.int64, [None, None],name='reason_input')
+        w0 = tf.placeholder(tf.int64, [None, None],name='W0_input')
+        w1 = tf.placeholder(tf.int64, [None, None],name='W1_input')
+        labels = tf.placeholder(tf.int64, [None, 2],name='Label')
+
+        claim = tf.Print(claim,[claim],message='claim')
 
         claim_enc_fw, claim_enc_bw, reason_enc_fw, reason_enc_bw, w0_enc_fw, w0_enc_bw, w1_enc_fw, w1_enc_bw = self._build_cells(self.rnn_keeprate)
         self._build_cells(self.rnn_keeprate)
@@ -52,21 +55,21 @@ class Model():
         concat0 = tf.concat([claim_avg, reason_avg, w0_avg], axis=1)
         concat1 = tf.concat([claim_avg, reason_avg, w1_avg], axis=1)
 
-        h0 = self._fully_connected(concat0, MyConfig.fcn_hidden)
-        h1 = self._fully_connected(concat1, MyConfig.fcn_hidden)
-        w0_prob = self._fully_connected(h0, 1)
-        w1_prob = self._fully_connected(h1, 1)
+        h0 = self._fully_connected(concat0, MyConfig.fcn_hidden, 'h0_0')
+        h1 = self._fully_connected(concat1, MyConfig.fcn_hidden, 'h1_0')
+        w0_prob = self._fully_connected(h0, 1, 'h0_1')
+        w1_prob = self._fully_connected(h1, 1, 'h1_1')
 
         self.logits = tf.concat([w0_prob,w1_prob],axis=1)
         self.cost, self.train_op, self.acc = self._build_ops(self.logits, labels)
 
-    def _fully_connected(self,input_data,output_dim):
+    def _fully_connected(self,input_data,output_dim, names):
         dense_layer = tf.layers.dense(input_data, output_dim, activation=None,
                                  kernel_initializer=tf.contrib.layers.xavier_initializer(),
-                                 kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=self.l2_coeffi),
-                                 name='dense1')
-        drop_layer = tf.layers.dropout(dense_layer, rate=self.fcn_droprate, name='drop1')
-        activation_layer = tf.nn.relu(drop_layer,name='relu1')
+                                 kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=MyConfig.l2_coeffi),
+                                 name=names+'dense')
+        drop_layer = tf.layers.dropout(dense_layer, rate=self.fcn_keeprate, name=names+'drop')
+        activation_layer = tf.nn.relu(drop_layer,name=names+'relu')
         return activation_layer
 
     def _build_ops(self,logits,targets):
@@ -80,6 +83,7 @@ class Model():
 
     def _build_cells(self, keep_rate):
         total_cell = [tf.nn.rnn_cell.MultiRNNCell([self._cell(keep_rate) for _ in range(MyConfig.rnn_layer)]) for i in range(8)]
+        return  total_cell
 
     def _cell(self, keep_rate):
         cell = tf.nn.rnn_cell.BasicLSTMCell(MyConfig.rnn_hidden)
@@ -96,7 +100,6 @@ class Model():
             'Label:0': label,
         })
         writer.add_summary(summary, self.global_step.eval())
-
 
     def _import_nli_embed_model(self):
         pass

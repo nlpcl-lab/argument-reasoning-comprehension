@@ -28,11 +28,11 @@ def train(batch_size, epoch, word_embed):
 
         for step, batch in enumerate(train_data_gen):
             #  ['warrant0', 'warrant1', 'correctLabelW0orW1', 'reason', 'claim']
-            _, cost, acc = model.train(sess, batch)
+            _, cost, acc = model.train(sess, batch[0], batch[1], batch[2], batch[3], batch[4])
             if step%20==0:
                 print('Step: {}\nCost: {}'.format(step,cost))
-                train_logits, train_acc = model.test(sess, batch, write_logs=True, writer=writer1)
-                dev_logits, dev_acc = model.test(sess, dev_batch, write_logs=True, writer=writer2)
+                train_logits, train_acc = model.test(sess, batch[0], batch[1], batch[2], batch[3], batch[4], write_logs=True, writer=writer1)
+                dev_logits, dev_acc = model.test(sess, dev_batch[0], dev_batch[1], dev_batch[2], dev_batch[3], dev_batch[4], write_logs=True, writer=writer2)
                 print("train_acc: {}, dev_acc: {}".format(train_acc, dev_acc))
 
 
