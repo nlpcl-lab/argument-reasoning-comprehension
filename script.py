@@ -11,7 +11,7 @@ NeuralNet Script file
 
 
 def train(batch_size, epoch, word_embed):
-    embed_matrix,word_idx = word_embed
+    embed_matrix, word_idx = word_embed
     train_data_gen = reasoning_batch_generator(batch_size, epoch, word_idx)
     dev_batch = reasoning_test_data_load('dev', word_idx)
     model = Model(embed_matrix)
@@ -30,15 +30,13 @@ def train(batch_size, epoch, word_embed):
         for step, batch in enumerate(train_data_gen):
             #  ['warrant0', 'warrant1', 'correctLabelW0orW1', 'reason', 'claim']
             _, cost, acc = model.train(sess, batch[0], batch[1], batch[2], batch[3], batch[4])
-            if step%20==0:
-                print('Step: {}    Cost: {}'.format(step,cost))
+            if step % 20 == 0:
+                print('Step: {}    Cost: {}'.format(step, cost))
                 train_logits, train_acc = model.test(sess, batch[0], batch[1], batch[2], batch[3], batch[4],
                                                      write_logs=True, writer=writer1)
                 dev_logits, dev_acc = model.test(sess, dev_batch[0], dev_batch[1], dev_batch[2], dev_batch[3],
                                                  dev_batch[4], write_logs=True, writer=writer2)
                 print("train_acc: {}, dev_acc: {}\n".format(train_acc, dev_acc))
-
-
 
 
 def test(word_embed):
@@ -48,7 +46,7 @@ def test(word_embed):
 
 
 def remove_previous():
-    dirname = ['./logdir','./logdir_dev','./house']
+    dirname = ['./logdir', './logdir_dev', './house']
     for dir in dirname:
         fnames = os.listdir(dir)
         for f in fnames: os.remove(dir+'/'+f)
