@@ -23,8 +23,8 @@ class MyConfig:
     rnn_train_keeprate = 0.5
     fcn_train_keeprate = 0.5
     epoch = 100
-    batch_size = 80
+    batch_size = 100
     lr = 0.001
     rnn_layer = 3
     rnn_hidden = 32
-    fcn_hidden = rnn_hidden*12
+    fcn_hidden = rnn_hidden*12  #equal size with given cocnat sentence representation
