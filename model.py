@@ -50,8 +50,13 @@ class Model():
         w0_avg = tf.reduce_mean(w0_bi, 1)
         w1_avg = tf.reduce_mean(w1_bi, 1)
 
-        concat0 = tf.concat([claim_avg, reason_avg, w0_avg], axis=1)
-        concat1 = tf.concat([claim_avg, reason_avg, w1_avg], axis=1)
+        claim_max = tf.reduce_max(claim_bi, 1)
+        reason_max = tf.reduce_max(reason_bi, 1)
+        w0_max = tf.reduce_max(w0_bi, 1)
+        w1_max = tf.reduce_max(w1_bi, 1)
+
+        concat0 = tf.concat([claim_avg, reason_avg, w0_avg, claim_max, reason_max, w0_max], axis=1)
+        concat1 = tf.concat([claim_avg, reason_avg, w1_avg, claim_max, reason_max, w1_max], axis=1)
 
         h0 = self._fully_connected(concat0, MyConfig.fcn_hidden, 'h0_0')
         h1 = self._fully_connected(concat1, MyConfig.fcn_hidden, 'h1_0')
@@ -68,7 +73,7 @@ class Model():
                                  kernel_initializer=tf.contrib.layers.xavier_initializer(),
                                  kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=MyConfig.l2_coeffi),
                                  name=names+'dense')
-        drop_layer = tf.nn.dropout(dense_layer, rate=self.fcn_keeprate, name=names+'drop')
+        drop_layer = tf.nn.dropout(dense_layer, keep_prob=self.fcn_keeprate, name=names+'drop')
         activation_layer = tf.nn.relu(drop_layer,name=names+'relu')
         return activation_layer
 

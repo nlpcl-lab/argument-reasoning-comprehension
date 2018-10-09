@@ -19,12 +19,12 @@ class MyConfig:
     n_class = 2
 
     # Hyperparameters
-    l2_coeffi = 0.2
+    l2_coeffi = 0.1
     rnn_train_keeprate = 0.5
     fcn_train_keeprate = 0.5
     epoch = 100
-    batch_size = 100
+    batch_size = 80
     lr = 0.001
     rnn_layer = 3
     rnn_hidden = 32
-    fcn_hidden = rnn_hidden*6
+    fcn_hidden = rnn_hidden*12
