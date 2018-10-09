@@ -24,7 +24,20 @@ def batch_idx_mapping(word_idx, batch):
     # TODO
     """Batch's sentence into array of index"""
     """split dict into into 4(or 5) different array"""
-    pass
+    total_batch = []
+    for item in batch:
+        real_batch = []
+        for sent_idx,raw_sent in enumerate(item):
+            if raw_sent in ['0','1']:  # label case
+                real_batch.append([int(raw_sent)])
+                continue
+            real_batch.append(list())
+            tokens = raw_sent.split()
+            for t in tokens:
+                if t in word_idx: real_batch[sent_idx].append(word_idx[t])
+                else: real_batch[sent_idx].append(word_idx['_UNK_'])
+        total_batch.append(real_batch)
+    return total_batch
 
 
 def load_reasoning_data(setname):
@@ -45,8 +58,17 @@ def reasoning_batch_generator(batch_size=100,epoch=1, word_idx=None):
             batch.append(item)
             if len(batch)==batch_size:
                 batch = batch_idx_mapping(word_idx, batch)
+                batch = split_hori(batch)
                 yield batch
                 batch = [] # ignore the remaining chunk?
+
+
+def split_hori(batch):
+    items = [list() for i in range(5)]
+    for b in batch:
+        for idx,el in enumerate(b):
+            items[idx].append(el)
+    return items
 
 
 def reasoning_test_data_load(setname, word_idx=None):
@@ -100,4 +122,8 @@ def load_word_embedding_table(model_type):
 
 
 if __name__ == '__main__':
-    a,b = load_word_embedding_table("GLOVE")
+    embed_matrix, word_idx = load_word_embedding_table('GLOVE')
+    train_data_gen = reasoning_batch_generator(100,1, word_idx)
+    for a in train_data_gen:
+
+        break

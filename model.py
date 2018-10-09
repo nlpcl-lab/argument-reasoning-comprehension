@@ -97,7 +97,7 @@ class Model():
     def _import_nli_embed_model(self):
         pass
 
-    def train(self, sess, claim, reason, w0, w1, label):
+    def train(self, sess, w0, w1, label, reason, claim):
         return sess.run([self.train_op,self.cost],feed_dict={
             'claim_input:0': claim,
             'reason_input:0': reason,
