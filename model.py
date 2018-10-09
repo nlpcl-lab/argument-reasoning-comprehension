@@ -68,7 +68,7 @@ class Model():
                                  kernel_initializer=tf.contrib.layers.xavier_initializer(),
                                  kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=MyConfig.l2_coeffi),
                                  name=names+'dense')
-        drop_layer = tf.layers.dropout(dense_layer, rate=self.fcn_keeprate, name=names+'drop')
+        drop_layer = tf.nn.dropout(dense_layer, rate=self.fcn_keeprate, name=names+'drop')
         activation_layer = tf.nn.relu(drop_layer,name=names+'relu')
         return activation_layer
 
@@ -123,7 +123,10 @@ class Model():
             'reason_input:0': reason,
             'W0_input:0': w0,
             'W1_input:0': w1,
-            'Label:0': label})
+            'Label:0': label,
+            self.rnn_keeprate: 1.0,
+            self.fcn_keeprate: 1.0
+        })
         pass
 
     def predict(self, sess, claim, reason, w0, w1):
