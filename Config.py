@@ -14,15 +14,17 @@ class MyConfig:
     word_embed_vector_len = 300
     log_dir = './logdir'
     train_dir = './house'
+    UNK_fname = '_UNK_.txt'
+    PAD_fname = '_PAD_.txt'
+    n_class = 2
 
     # Hyperparameters
-    l2_coeffi = 0.1
+    l2_coeffi = 0.3
     rnn_train_keeprate = 0.5
     fcn_train_keeprate = 0.5
-    epoch = 50
-    batch_size = 100
+    epoch = 100
+    batch_size = 50
     lr = 0.001
-    rnn_layer = 3
-    rnn_hidden = 64
-    n_class = 2
-    fcn_hidden = rnn_hidden*4
+    rnn_layer = 2
+    rnn_hidden = 32
+    fcn_hidden = rnn_hidden*6

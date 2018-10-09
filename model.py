@@ -25,7 +25,6 @@ class Model():
         w1 = tf.placeholder(tf.int64, [None, None],name='W1_input')
         labels = tf.placeholder(tf.int64, [None, 2],name='Label')
 
-
         claim_enc_fw, claim_enc_bw, reason_enc_fw, reason_enc_bw, w0_enc_fw, w0_enc_bw, w1_enc_fw, w1_enc_bw = self._build_cells(self.rnn_keeprate)
         self._build_cells(self.rnn_keeprate)
         with tf.variable_scope('ciam_enc'):
@@ -56,10 +55,12 @@ class Model():
 
         h0 = self._fully_connected(concat0, MyConfig.fcn_hidden, 'h0_0')
         h1 = self._fully_connected(concat1, MyConfig.fcn_hidden, 'h1_0')
-        w0_prob = self._fully_connected(h0, 1, 'h0_1')
-        w1_prob = self._fully_connected(h1, 1, 'h1_1')
-
-        self.logits = tf.concat([w0_prob,w1_prob],axis=1)
+        with tf.variable_scope('w0_prob'):
+            w0_prob = self._fully_connected(h0, 1, 'h0_1')
+        with tf.variable_scope('w1_prob'):
+            w1_prob = self._fully_connected(h1, 1, 'h1_1')
+        with tf.variable_scope('logits'):
+            self.logits = tf.concat([w0_prob,w1_prob],axis=1,name='logits')
         self.cost, self.train_op, self.acc = self._build_ops(self.logits, labels)
 
     def _fully_connected(self,input_data,output_dim, names):

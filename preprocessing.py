@@ -1,3 +1,5 @@
+import pickle
+import os
 import numpy as np
 from Config import MyConfig
 from random import shuffle
@@ -53,7 +55,7 @@ def reasoning_batch_generator(batch_size=100,epoch=1, word_idx=None):
     total_data = load_reasoning_data('train')
 
     for ep in range(epoch):
-        print('---Epoch {}/{}---'.format(ep,epoch))
+        #print('---Epoch {}/{}---'.format(ep,epoch))
         batch = []
         for idx,item in enumerate(total_data):
             batch.append(item)
@@ -123,7 +125,14 @@ def load_word_embedding_table(model_type):
         special_key = ['_UNK_','_PAD_']
         for k in special_key:
             # TODO : Serialize two special key vector by `pickle` library
-            wordmap.append([k, np.random.normal(0, 0.0001, MyConfig.word_embed_vector_len)])
+            if os.path.exists(k+'.txt'):
+                with open(k+'.txt','rb') as f:
+                    kval = pickle.load(f)
+            else:
+                kval = np.random.normal(0, 0.0001, MyConfig.word_embed_vector_len)
+                with open(k+'.txt','wb') as f:
+                    pickle.dump(kval,f)
+            wordmap.append([k, kval])
 
         vocab_matrix = np.zeros([len(wordmap), MyConfig.word_embed_vector_len])
         word_idx = dict()
