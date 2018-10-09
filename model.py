@@ -25,7 +25,6 @@ class Model():
         w1 = tf.placeholder(tf.int64, [None, None],name='W1_input')
         labels = tf.placeholder(tf.int64, [None, 2],name='Label')
 
-        claim = tf.Print(claim,[claim],message='claim')
 
         claim_enc_fw, claim_enc_bw, reason_enc_fw, reason_enc_bw, w0_enc_fw, w0_enc_bw, w1_enc_fw, w1_enc_bw = self._build_cells(self.rnn_keeprate)
         self._build_cells(self.rnn_keeprate)
@@ -117,7 +116,7 @@ class Model():
 
     def test(self, sess, w0, w1, label, reason, claim, write_logs=True,writer=None):
         if write_logs:
-            self.write_summary(sess, w0, w1, label, reason, claim, write_logs=True,writer=None)
+            self.write_summary(sess, w0, w1, label, reason, claim, write_logs=True,writer=writer)
         return sess.run([self.logits,self.acc],feed_dict={
             'claim_input:0': claim,
             'reason_input:0': reason,

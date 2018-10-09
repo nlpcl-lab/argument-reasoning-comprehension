@@ -29,7 +29,8 @@ def batch_idx_mapping(word_idx, batch):
         real_batch = []
         for sent_idx,raw_sent in enumerate(item):
             if raw_sent in ['0','1']:  # label case
-                real_batch.append([int(raw_sent)])
+                label = [1,0] if int(raw_sent)==0 else [0,1]
+                real_batch.append(label)
                 continue
             real_batch.append(list())
             tokens = raw_sent.split()
@@ -63,7 +64,7 @@ def reasoning_batch_generator(batch_size=100,epoch=1, word_idx=None):
                 batch = [] # ignore the remaining chunk?
 
 
-def split_hori(batch):
+def split_hori(batch, word_idx):
     items = [list() for i in range(5)]
     for b in batch:
         for idx,el in enumerate(b):
@@ -90,7 +91,7 @@ def reasoning_test_data_load(setname, word_idx=None):
     assert setname in ['dev','test']
     total_data = load_reasoning_data(setname)
     total_data = batch_idx_mapping(word_idx, total_data)
-    total_data = split_hori(total_data)
+    total_data = split_hori(total_data,word_idx)
     return total_data
 
 
