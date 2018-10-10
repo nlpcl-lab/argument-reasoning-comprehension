@@ -122,9 +122,11 @@ def load_word_embedding_table(model_type):
                 line = line.strip().split()
                 wordmap.append([line[0],line[1:]])  # [name, vector]
 
+        # TODO
+        # <Number> Token insert and preprocessing
+
         special_key = ['_UNK_','_PAD_']
         for k in special_key:
-            # TODO : Serialize two special key vector by `pickle` library
             if os.path.exists(k+'.txt'):
                 with open(k+'.txt','rb') as f:
                     kval = pickle.load(f)
