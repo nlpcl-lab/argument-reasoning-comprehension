@@ -97,8 +97,20 @@ def reasoning_test_data_load(setname, word_idx=None):
     return total_data
 
 
-def nli_load_raw_file():
-    pass
+def nli_load_raw_file(fname):
+    fpath = MyConfig.esim_dirname + MyConfig.esim_fname.format(fname)
+    data = []
+
+    with open(fpath,'r') as f:
+        ls = f.readlines()
+        selected_title = ['gold_label','sentence1','sentence2']
+        seletced_idx = [ls[0].split('\t').index(title) for title in selected_title]
+
+        for idx,l in enumerate(ls[1:]):
+            pass
+
+
+
 
 
 def nli_next_batch():
@@ -150,8 +162,7 @@ def load_word_embedding_table(model_type):
 
 
 if __name__ == '__main__':
+    nli_load_raw_file(MyConfig.train)
+    raise ValueError
     embed_matrix, word_idx = load_word_embedding_table('GLOVE')
     train_data_gen = reasoning_batch_generator(100,1, word_idx)
-    for a in train_data_gen:
-
-        break
