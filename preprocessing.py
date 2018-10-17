@@ -22,6 +22,20 @@ def read_reasoning_raw_file(fname, is_test=False):
     return data
 
 
+def read_nli_raw_file(fname):
+    fpath = MyConfig.esim_dirname + MyConfig.esim_fname.format(fname)
+    data = []
+    with open(fpath, 'r') as f:
+        ls = f.readlines()
+        selected_title = ['gold_label', 'sentence1', 'sentence2']
+        selected_idx = [ls[0].split('\t').index(title) for title in selected_title]
+        for idx, l in enumerate(ls[1:]):
+            raw = l.strip().split('\t')
+            item = [el for idx, el in enumerate(raw) if idx in selected_idx]
+            data.append(item)
+    return data
+
+
 def batch_idx_mapping(word_idx, batch):
     # TODO
     """Batch's sentence into array of index"""
@@ -43,6 +57,11 @@ def batch_idx_mapping(word_idx, batch):
     return total_batch
 
 
+def load_nli_data(setname):
+    raw_data = read_nli_raw_file(MyConfig.reasoning_tdv_fname_list[MyConfig.tdv_map[setname]])
+    return raw_data
+
+
 def load_reasoning_data(setname):
     raw_data = read_reasoning_raw_file(MyConfig.reasoning_tdv_fname_list[MyConfig.tdv_map[setname]])
     used_k = ['warrant0', 'warrant1', 'correctLabelW0orW1', 'reason', 'claim']
@@ -50,9 +69,13 @@ def load_reasoning_data(setname):
     return total_item
 
 
-def reasoning_batch_generator(batch_size=100,epoch=1, word_idx=None):
+# TODO
+# 배치 2개 하는거 한번에 하도록 합치기
+def reasoning_batch_generator(batch_size=100,epoch=1, word_idx=None, data_type='REASON'):
     pivot = 0 # idx in one epoch
-    total_data = load_reasoning_data('train')
+    if data_type=='REASON':
+        total_data = load_reasoning_data('train')
+    else: total_data = read_nli_raw_file('train')
 
     for ep in range(epoch):
         #print('---Epoch {}/{}---'.format(ep,epoch))
@@ -95,26 +118,6 @@ def reasoning_test_data_load(setname, word_idx=None):
     total_data = batch_idx_mapping(word_idx, total_data)
     total_data = split_hori(total_data,word_idx)
     return total_data
-
-
-def nli_load_raw_file(fname):
-    fpath = MyConfig.esim_dirname + MyConfig.esim_fname.format(fname)
-    data = []
-
-    with open(fpath,'r') as f:
-        ls = f.readlines()
-        selected_title = ['gold_label','sentence1','sentence2']
-        seletced_idx = [ls[0].split('\t').index(title) for title in selected_title]
-
-        for idx,l in enumerate(ls[1:]):
-            pass
-
-
-
-
-
-def nli_next_batch():
-    pass
 
 
 def load_word_embedding_table(model_type):
@@ -162,7 +165,5 @@ def load_word_embedding_table(model_type):
 
 
 if __name__ == '__main__':
-    nli_load_raw_file(MyConfig.train)
-    raise ValueError
     embed_matrix, word_idx = load_word_embedding_table('GLOVE')
     train_data_gen = reasoning_batch_generator(100,1, word_idx)
