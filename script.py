@@ -13,7 +13,7 @@ NeuralNet Script file
 def train(batch_size, epoch, word_embed):
     embed_matrix, word_idx = word_embed
     train_data_gen = reasoning_batch_generator(batch_size, epoch, word_idx)
-    dev_batch = reasoning_test_data_load('dev', word_idx)
+    dev_batch = test_data_load('dev', word_idx)
     model = Model(embed_matrix)
 
     with tf.Session() as sess:
@@ -41,7 +41,7 @@ def train(batch_size, epoch, word_embed):
 
 def test(word_embed):
     embed_matrix, word_idx = word_embed
-    test_data = reasoning_test_data_load('test', word_idx)
+    test_data = test_data_load('test', word_idx)
     pass
 
 

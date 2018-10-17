@@ -36,7 +36,7 @@ def read_nli_raw_file(fname):
     return data
 
 
-def batch_idx_mapping(word_idx, batch):
+def batch_idx_mapping(word_idx, batch, data_type='REASON'):
     # TODO
     """Batch's sentence into array of index"""
     """split dict into into 4(or 5) different array"""
@@ -44,10 +44,18 @@ def batch_idx_mapping(word_idx, batch):
     for item in batch:
         real_batch = []
         for sent_idx,raw_sent in enumerate(item):
-            if raw_sent in ['0','1']:  # label case
-                label = [1,0] if int(raw_sent)==0 else [0,1]
-                real_batch.append(label)
-                continue
+            # TODO : Serialize this data_type FLAGS into MyConfig.
+            if data_type == 'REASON':
+                if raw_sent in ['0','1']:  # label case
+                    label = [1,0] if int(raw_sent)==0 else [0,1]
+                    real_batch.append(label)
+                    continue
+            elif data_type == 'NLI':
+                if raw_sent in ['entailment','contradiction','neutral']:
+                    label_idx = ['entailment','contradiction','neutral'].index(raw_sent)
+                    label = [1 if idx==label_idx else 0 for idx in range(3)]
+                    real_batch.append(label)
+                    continue
             real_batch.append(list())
             tokens = raw_sent.split()
             for t in tokens:
@@ -75,7 +83,7 @@ def reasoning_batch_generator(batch_size=100,epoch=1, word_idx=None, data_type='
     pivot = 0 # idx in one epoch
     if data_type=='REASON':
         total_data = load_reasoning_data('train')
-    else: total_data = read_nli_raw_file('train')
+    else: total_data = load_nli_data('train')
 
     for ep in range(epoch):
         #print('---Epoch {}/{}---'.format(ep,epoch))
@@ -112,9 +120,12 @@ def max_len(batch):
     return max_len
 
 
-def reasoning_test_data_load(setname, word_idx=None):
+def test_data_load(setname, word_idx=None, data_type='REASON'):
     assert setname in ['dev','test']
-    total_data = load_reasoning_data(setname)
+    if  data_type=='REASON':
+        total_data = load_reasoning_data(setname)
+    else:
+        total_data = load_nli_data(setname)
     total_data = batch_idx_mapping(word_idx, total_data)
     total_data = split_hori(total_data,word_idx)
     return total_data
