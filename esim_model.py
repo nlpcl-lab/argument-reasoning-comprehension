@@ -16,7 +16,9 @@ class ESIM():
         self.saver = tf.train.Saver(tf.global_variables())
 
     def _build_model(self):
-        pass
+        hyp = tf.placeholder(tf.int64, [None, None], name='hyp_input')
+        pre = tf.placeholder(tf.int64, [None, None], name='pre_input')
+        label = tf.placeholder(tf.int64,[None,3],name='label')
 
     def _input_encoding(self):
         pass
