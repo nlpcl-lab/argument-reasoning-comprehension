@@ -1,4 +1,5 @@
 import tensorflow as tf
+from Config import MyConfig
 '''
 ESIM model for sentence pair embedding
 '''
@@ -20,9 +21,14 @@ class ESIM():
         hyp = tf.placeholder(tf.int64, [None, None], name='pre_input')
         label = tf.placeholder(tf.int64,[None,3],name='label')
 
-        pre_state, hyp_state = self._input_encoding(pre,hyp,label)
+        pre_list, hyp_list = self._input_encoding(pre,hyp)
+        attention_res = self._local_inference(pre_list, hyp_list)
+        comp_res = self._inference_composition(attention_res)
+        self._pooling_layer()
+        logits = self._fully_connected_layer()
+        self.cost,self.label = self._build_op(logits)
 
-    def _input_encoding(self,pre,hyp,label):
+    def _input_encoding(self,pre,hyp):
         pre_enc_fw, pre_enc_bw, hyp_enc_fw, hyp_enc_bw = self._build_cells(self.rnn_keeprate)
 
         pre_outputs, pre_states = tf.nn.bidirectional_dynamic_rnn(pre_enc_fw, pre_enc_bw,
@@ -32,8 +38,12 @@ class ESIM():
                                                                   tf.nn.embedding_lookup(self.word_embedding, hyp),
                                                                   dtype=tf.float32)
 
+        pre_bi = tf.concat(pre_outputs, axis=2)
+        hyp_bi = tf.concat(hyp_outputs, axis=2)
 
-
+        pre_list = tf.unstack(pre_bi, axis=1)
+        hyp_list = tf.unstack(hyp_bi, axis=1)
+        return pre_list, hyp_list
 
     def _local_inference(self):
         pass
@@ -41,14 +51,25 @@ class ESIM():
     def _inference_composition(self):
         pass
 
+    def _pooling_layer(self):
+        pass
+
+    def _fully_connected_layer(self):
+        pass
+
     def _build_op(self):
         pass
 
-    def _build_cells(self):
-        pass
+    def _build_cells(self, keep_rate):
+        total_cell = [tf.nn.rnn_cell.MultiRNNCell([self._cell(keep_rate) for _ in range(MyConfig.rnn_layer)]) for i in
+                      range(4)]
+        return total_cell
 
-    def _cell(self):
-        pass
+    @staticmethod
+    def _cell(keep_rate):
+        cell = tf.nn.rnn_cell.BasicLSTMCell(MyConfig.rnn_hidden)
+        cell = tf.nn.rnn_cell.DropoutWrapper(cell,output_keep_prob=keep_rate)
+        return cell
 
     def train(self):
         pass
