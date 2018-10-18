@@ -71,13 +71,23 @@ class ESIM():
         cell = tf.nn.rnn_cell.DropoutWrapper(cell,output_keep_prob=keep_rate)
         return cell
 
-    def train(self):
-        pass
+    def train(self, sess, hyp, pre, label):
+        return sess.run([self.train_op, self.cost, self.acc], feed_dict={
+            'hyp_input:0':hyp,
+            'pre_input:0':pre,
+            'label:0':label
+        })
 
-    def test(self):
-        pass
+    def test(self, sess, hyp, pre, label, write_logs=True, writer=None):
+        if write_logs:
+            self.write_summary(sess, hyp, pre, label, write_logs=True, writer=writer)
+        return sess.run([self.logits,self.acc],feed_dict={
+            'hyp_input:0':hyp,
+            'pre_input:0':pre,
+            'label:0':label
+        })
 
-    def write_summary(self):
+    def write_summary(self, ses, hyp, pre, label, write_logs, writer):
         pass
 
     

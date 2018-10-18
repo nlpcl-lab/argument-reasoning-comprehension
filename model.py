@@ -132,7 +132,6 @@ class Model():
             self.rnn_keeprate: 1.0,
             self.fcn_keeprate: 1.0
         })
-        pass
 
     def predict(self, sess, claim, reason, w0, w1):
         pass
