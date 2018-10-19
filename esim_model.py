@@ -25,9 +25,10 @@ class ESIM():
         pre_list, hyp_list = self._input_encoding(pre,hyp)
         attention_res = self._local_inference(pre_list, hyp_list, pre, hyp)
         comp_res = self._inference_composition(attention_res)
-        self._pooling_layer()
-        logits = self._fully_connected_layer()
-        self.cost,self.label = self._build_op(logits)
+        input_data = self._pooling_layer()
+        hidden_fcn = self._fully_connected_layer(input_data, 300, 'h0')
+        logits = self._fully_connected_layer(hidden_fcn, 3, 'h1')
+        self.cost,self.label = self._build_op(logits,label)
 
     def _input_encoding(self,pre,hyp):
         pre_enc_fw, pre_enc_bw, hyp_enc_fw, hyp_enc_bw = self._build_cells(self.rnn_keeprate)
@@ -59,8 +60,14 @@ class ESIM():
     def _pooling_layer(self):
         pass
 
-    def _fully_connected_layer(self):
-        pass
+    def _fully_connected_layer(self, input_data, output_dim, names):
+        dense_layer = tf.layers.dense(input_data, output_dim, activation=None,
+                                      kernel_initializer=tf.contrib.layers.xavier_initializer(),
+                                      kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=MyConfig.l2_coeffi),
+                                      name=names + 'dense')
+        drop_layer = tf.nn.dropout(dense_layer, keep_prob=self.fcn_keeprate, name=names + 'drop')
+        activation_layer = tf.nn.relu(drop_layer, name=names + 'relu')
+        return activation_layer
 
     def _build_op(self, logits, targets):
         cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=targets),
