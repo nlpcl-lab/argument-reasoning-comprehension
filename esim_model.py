@@ -28,7 +28,7 @@ class ESIM():
         input_data = self._pooling_layer()
         hidden_fcn = self._fully_connected_layer(input_data, 300, 'h0')
         logits = self._fully_connected_layer(hidden_fcn, 3, 'h1')
-        self.cost,self.label = self._build_op(logits,label)
+        self.cost, self.train_op, self.label = self._build_op(logits, label)
 
     def _input_encoding(self,pre,hyp):
         pre_enc_fw, pre_enc_bw, hyp_enc_fw, hyp_enc_bw = self._build_cells(self.rnn_keeprate)
@@ -54,7 +54,7 @@ class ESIM():
         alpha,beta = [],[]
         pass
 
-    def _inference_composition(self):
+    def _inference_composition(self, attention_res):
         pass
 
     def _pooling_layer(self):
