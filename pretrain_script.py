@@ -45,6 +45,8 @@ def esim_test(word_embed):
 def esim_frozen():
     # TODO: Frozen the parameter of ESIM sentence embedding part & Export for comprehension Task
     pass
+
+
 if __name__ == '__main__':
     run_type = pretrain_parser()  # train/test
     word_embed = load_word_embedding_table('GLOVE')

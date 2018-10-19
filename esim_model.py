@@ -21,8 +21,9 @@ class ESIM():
         hyp = tf.placeholder(tf.int64, [None, None], name='pre_input')
         label = tf.placeholder(tf.int64,[None,3],name='label')
 
+
         pre_list, hyp_list = self._input_encoding(pre,hyp)
-        attention_res = self._local_inference(pre_list, hyp_list)
+        attention_res = self._local_inference(pre_list, hyp_list, pre, hyp)
         comp_res = self._inference_composition(attention_res)
         self._pooling_layer()
         logits = self._fully_connected_layer()
@@ -45,7 +46,11 @@ class ESIM():
         hyp_list = tf.unstack(hyp_bi, axis=1)
         return pre_list, hyp_list
 
-    def _local_inference(self):
+    def _local_inference(self, pre_list, hyp_list, pre, hyp):
+
+        score = []
+        pre_att, hyp_att = [],[]
+        alpha,beta = [],[]
         pass
 
     def _inference_composition(self):
