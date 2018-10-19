@@ -62,8 +62,16 @@ class ESIM():
     def _fully_connected_layer(self):
         pass
 
-    def _build_op(self):
-        pass
+    def _build_op(self, logits, targets):
+        cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=targets),
+                              name='loss') + tf.losses.get_regularization_loss()
+        train_op = tf.train.AdamOptimizer(learning_rate=MyConfig.lr).minimize(cost, global_step=self.global_step,
+                                                                              name='OP')
+        acc = tf.reduce_mean(tf.cast(tf.equal(tf.argmax(targets, 1), tf.argmax(logits, 1)), tf.float32))
+
+        tf.summary.scalar('acc', acc)
+        tf.summary.scalar('cost', cost)
+        return cost, train_op, acc
 
     def _build_cells(self, keep_rate):
         total_cell = [tf.nn.rnn_cell.MultiRNNCell([self._cell(keep_rate) for _ in range(MyConfig.rnn_layer)]) for i in
