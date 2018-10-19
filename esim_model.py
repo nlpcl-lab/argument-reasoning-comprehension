@@ -48,7 +48,6 @@ class ESIM():
         return pre_list, hyp_list
 
     def _local_inference(self, pre_list, hyp_list, pre, hyp):
-
         score = []
         pre_att, hyp_att = [],[]
         alpha,beta = [],[]

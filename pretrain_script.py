@@ -44,6 +44,7 @@ def esim_test(word_embed):
 
 def esim_frozen():
     # TODO: Frozen the parameter of ESIM sentence embedding part & Export for comprehension Task
+    # reference: https://blog.metaflow.fr/tensorflow-how-to-freeze-a-model-and-serve-it-with-a-python-api-d4f3596b3adc
     pass
 
 
