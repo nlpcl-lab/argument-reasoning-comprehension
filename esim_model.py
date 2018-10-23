@@ -20,17 +20,18 @@ class ESIM():
         pre = tf.placeholder(tf.int64, [None, None], name='hyp_input')
         hyp = tf.placeholder(tf.int64, [None, None], name='pre_input')
         label = tf.placeholder(tf.int64,[None,3],name='label')
-
+        pre_seq_len = tf.placeholder(tf.int64, shale=(), name='premise_len')
+        hyp_seq_len = tf.placeholder(tf.int64, shale=(), name='hypothesis_len')
 
         pre_list, hyp_list = self._input_encoding(pre,hyp)
-        attention_res = self._local_inference(pre_list, hyp_list, pre, hyp)
+        attention_res = self._local_inference(pre_list, hyp_list, pre_seq_len, hyp_seq_len)
         comp_res = self._inference_composition(attention_res)
         input_data = self._pooling_layer()
         hidden_fcn = self._fully_connected_layer(input_data, 300, 'h0')
         logits = self._fully_connected_layer(hidden_fcn, 3, 'h1')
         self.cost, self.train_op, self.label = self._build_op(logits, label)
 
-    def _input_encoding(self,pre,hyp):
+    def _input_encoding(self,pre_len,hyp_len):
         pre_enc_fw, pre_enc_bw, hyp_enc_fw, hyp_enc_bw = self._build_cells(self.rnn_keeprate)
 
         pre_outputs, pre_states = tf.nn.bidirectional_dynamic_rnn(pre_enc_fw, pre_enc_bw,
