@@ -12,7 +12,7 @@ def esim_train(batch_size, epoch, word_embed):
     embed_matrix, word_idx = word_embed
     train_data_gen = reasoning_batch_generator(batch_size, epoch, word_idx)
     dev_batch = test_data_load('dev', word_idx)
-    model = Model(embed_matrix)
+    model = ESIM(embed_matrix)
 
     with tf.Session() as sess:
         writer1 = tf.summary.FileWriter(MyConfig.log_dir, sess.graph)
@@ -30,10 +30,10 @@ def esim_train(batch_size, epoch, word_embed):
             _, cost, acc = model.train(sess, batch[0], batch[1], batch[2], batch[3], batch[4])
             if step % 20 == 0:
                 print('Step: {}    Cost: {}'.format(step, cost))
-                train_logits, train_acc = model.test(sess, batch[0], batch[1], batch[2], batch[3], batch[4],
+                train_logits, train_acc = model.test(pass,
                                                      write_logs=True, writer=writer1)
-                dev_logits, dev_acc = model.test(sess, dev_batch[0], dev_batch[1], dev_batch[2], dev_batch[3],
-                                                 dev_batch[4], write_logs=True, writer=writer2)
+                dev_logits, dev_acc = model.test(sess, pass,
+                                                 write_logs=True, writer=writer2)
                 print("train_acc: {}, dev_acc: {}\n".format(train_acc, dev_acc))
 
 
