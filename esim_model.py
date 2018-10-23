@@ -20,8 +20,8 @@ class ESIM():
         pre = tf.placeholder(tf.int64, [None, None], name='hyp_input')
         hyp = tf.placeholder(tf.int64, [None, None], name='pre_input')
         label = tf.placeholder(tf.int64,[None,3],name='label')
-        pre_seq_len = tf.placeholder(tf.int64, shale=(), name='premise_len')
-        hyp_seq_len = tf.placeholder(tf.int64, shale=(), name='hypothesis_len')
+        pre_seq_len = tf.placeholder(tf.int64, shape=(), name='premise_len')
+        hyp_seq_len = tf.placeholder(tf.int64, shape=(), name='hypothesis_len')
 
         pre_list, hyp_list = self._input_encoding(pre,hyp)
         attention_res = self._local_inference(pre_list, hyp_list, pre_seq_len, hyp_seq_len)
@@ -31,7 +31,7 @@ class ESIM():
         logits = self._fully_connected_layer(hidden_fcn, 3, 'h1')
         self.cost, self.train_op, self.label = self._build_op(logits, label)
 
-    def _input_encoding(self,pre_len,hyp_len):
+    def _input_encoding(self,pre,hyp):
         pre_enc_fw, pre_enc_bw, hyp_enc_fw, hyp_enc_bw = self._build_cells(self.rnn_keeprate)
 
         pre_outputs, pre_states = tf.nn.bidirectional_dynamic_rnn(pre_enc_fw, pre_enc_bw,
@@ -48,14 +48,24 @@ class ESIM():
         hyp_list = tf.unstack(hyp_bi, axis=1)
         return pre_list, hyp_list
 
-    def _local_inference(self, pre_list, hyp_list, pre, hyp):
+    def _local_inference(self, pre_list, hyp_list, pre_len, hyp_len):
         score = []
         pre_att, hyp_att = [],[]
         alpha,beta = [],[]
-        pass
 
-    def _inference_composition(self, attention_res):
-        pass
+
+
+    def _inference_composition(self, el1, el2):
+        v1_fw, v1_bw, v2_fw, v2_bw = self._build_cells(self.rnn_keeprate)
+
+        v1_outputs, v1_states = tf.nn.bidirectional_dynamic_rnn(v1_fw, v1_bw,
+                                                                tf.nn.embedding_lookup(self.word_embedding, el1),
+                                                                dtype=tf.float32)
+
+        v2_outputs, v2_states = tf.nn.bidirectional_dynamic_rnn(v2_fw, v2_bw,
+                                                                tf.nn.embedding_lookup(self.word_embedding, el2),
+                                                                dtype=tf.float32)
+
 
     def _pooling_layer(self):
         pass
