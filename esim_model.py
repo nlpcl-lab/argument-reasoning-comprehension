@@ -2,6 +2,7 @@ import tensorflow as tf
 from Config import MyConfig
 '''
 ESIM model for sentence pair embedding
+Currently Not implemented yet.
 '''
 
 class ESIM():
@@ -48,6 +49,7 @@ class ESIM():
         hyp_list = tf.unstack(hyp_bi, axis=1)
         return pre_list, hyp_list
 
+    # TODO: Implement local inference model and train
     def _local_inference(self, pre_list, hyp_list, pre_len, hyp_len):
         score = []
         pre_att, hyp_att = [],[]
