@@ -3,6 +3,7 @@ from Config import MyConfig
 '''
 ESIM model for sentence pair embedding
 Currently Not implemented yet.
+Reference the existing ESIM Model Code, link is https://github.com/nyu-mll/multiNLI/blob/master/python/models/esim.py
 '''
 
 class ESIM():
