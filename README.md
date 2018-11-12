@@ -10,8 +10,10 @@ This is the repository for the codes, targeting the task: SemEval 2018 Task12, t
 
 ## Reference
 
-* Plan to try similar approach with previous top-score submission ([GIST](https://www.google.co.kr/url?sa=t&source=web&rct=j&url=http://aclweb.org/anthology/S18-1122&ved=2ahUKEwiWw5uS7-bdAhWBVbwKHVv_BlQQFjAAegQIARAB&usg=AOvVaw1l7GdyLiKN2PyXEEAN1tYy))
+* Choi, Lee, **GIST at SemEval-2018 Task 12: A network transferring inference knowledge to Argument Reasoning Comprehension task** (Semeval 2018 Task12) [[paper]](http://aclweb.org/anthology/S18-1122)
 
-* Use pretrained sentence embedding model([Qian Chen et al. 2017](http://www.aclweb.org/anthology/P17-1152)), trained by larger dataset([MultiNLI](https://www.nyu.edu/projects/bowman/multinli/)).
+* Qian Chen et al., **Enhanced LSTM for Natural Language Inference** (ACL 2017) [[paper]](http://www.aclweb.org/anthology/P17-1152)
+
+* Dataset to train the Chen's sentence embedding model [[MultiNLI]](https://www.nyu.edu/projects/bowman/multinli/)
 
 * nyu-mll's ESIM model repository [[github]](https://github.com/nyu-mll/multiNLI/blob/master/python/models/esim.py)
