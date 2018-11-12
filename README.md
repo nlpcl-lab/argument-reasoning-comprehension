@@ -17,3 +17,7 @@ This is the repository for the codes, targeting the task: SemEval 2018 Task12, t
 * Dataset to train the Chen's sentence embedding model [[page]](https://www.nyu.edu/projects/bowman/multinli/) [[paper]](http://aclweb.org/anthology/N18-1101)
 
 * nyu-mll's ESIM model repository [[github]](https://github.com/nyu-mll/multiNLI/blob/master/python/models/esim.py)
+
+## Contributor
+
+Chaehun
