@@ -20,4 +20,4 @@ This is the repository for the codes, targeting the task: SemEval 2018 Task12, t
 
 ## Contributor
 
-Chaehun
+[ChaeHun](http://nlp.kaist.ac.kr/~ddehun)
