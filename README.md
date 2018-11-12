@@ -8,7 +8,7 @@ This is the repository for the codes, targeting the task: SemEval 2018 Task12, t
 
 * Select the correct `Warrant` that appropriately explain the given `Argument`(claim + reason).
 
-## Reference
+## References
 
 * Choi, Lee, **GIST at SemEval-2018 Task 12: A network transferring inference knowledge to Argument Reasoning Comprehension task** (Semeval 2018 Task12) [[paper]](http://aclweb.org/anthology/S18-1122)
 
