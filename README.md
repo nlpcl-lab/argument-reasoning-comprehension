@@ -14,6 +14,6 @@ This is the repository for the codes, targeting the task: SemEval 2018 Task12, t
 
 * Qian Chen et al., **Enhanced LSTM for Natural Language Inference** (ACL 2017) [[paper]](http://www.aclweb.org/anthology/P17-1152)
 
-* Dataset to train the Chen's sentence embedding model [[web]](https://www.nyu.edu/projects/bowman/multinli/) [[paper]](http://aclweb.org/anthology/N18-1101)
+* Dataset to train the Chen's sentence embedding model [[link]](https://www.nyu.edu/projects/bowman/multinli/) [[paper]](http://aclweb.org/anthology/N18-1101)
 
 * nyu-mll's ESIM model repository [[github]](https://github.com/nyu-mll/multiNLI/blob/master/python/models/esim.py)
