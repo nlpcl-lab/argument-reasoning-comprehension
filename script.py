@@ -1,13 +1,42 @@
 import os
 import tensorflow as tf
+import argparse
 from util import option_parser
 from preprocessing import reasoning_batch_generator, test_data_load, load_word_embedding_table
 from Config import MyConfig
 from model import Model
 
-'''
-NeuralNet Script file
-'''
+
+parser = argparse.ArgumentParser()
+
+parser.add_argument('--mode',choices=['nli_train','nli_eval','train','eval'],help='Choose the mode to run.')
+
+parser.add_argument('--reasoning_train_raw_fname',type=str,default='./data/train/train-full.txt')
+parser.add_argument('--reasoning_dev_raw_fname',type=str,default='./data/train/dev-full.txt')
+parser.add_argument('--reasoning_test_raw_fname',type=str,default='./data/train/test-only-data.txt')
+
+parser.add_argument('--word_embed_glove_fname', type=str, default='./data/emb/glove.6B.300d.txt')
+parser.add_argument('--mb_dim', type=int, default=300)
+parser.add_argument('--snli_raw_path',type=str,default='./data/nli/snli_1.0/snli_1.0_{}.txt')
+
+parser.add_argument("--use_pretrain", type=str, choices=['True', 'False'], default='True')
+
+parser.add_argument("--batch_size", type=int, default=16)
+parser.add_argument("--max_enc_len", type=int, default=50)
+parser.add_argument("--max_lm_len", type=int, default=150)
+parser.add_argument("--learning_rate", type=float, default=5e-4)
+parser.add_argument("--rand_unif_init_size", type=float, default=1e-3)
+parser.add_argument("--trunc_norm_init_std", type=float, default=1e-3)
+parser.add_argument("--max_grad_norm", type=float, default=3)
+parser.add_argument("--vocab_size", type=int, default=50000)
+
+parser.add_argument("--hidden_dim", type=int, default=256)
+parser.add_argument("--decoder_hidden_dim", type=int, default=384)
+parser.add_argument("--keep_rate", type=float, default=0.8)
+parser.add_argument("--max_epoch", type=int, default=25)
+
+args = parser.parse_args()
+
 
 
 def train(batch_size, epoch, word_embed):
@@ -38,30 +67,11 @@ def train(batch_size, epoch, word_embed):
                                                  dev_batch[4], write_logs=True, writer=writer2)
                 print("train_acc: {}, dev_acc: {}\n".format(train_acc, dev_acc))
 
-
-def test(word_embed):
-    embed_matrix, word_idx = word_embed
-    test_data = test_data_load('test', word_idx)
-    pass
-
-
-def remove_previous():
-    dirname = ['./logdir', './logdir_dev', './house']
-    for dir in dirname:
-        fnames = os.listdir(dir)
-        for f in fnames: os.remove(dir+'/'+f)
-
-
 def main():
-    run_type = option_parser()  # train/test
-    word_embed = load_word_embedding_table('GLOVE')
+    args.use_pretrain = True if args.use_pretrain == 'True' else False
 
-    if run_type == 'train':
-        remove_previous()
-        train(batch_size=MyConfig.batch_size, epoch=MyConfig.epoch, word_embed=word_embed)
+    if args.mode == 'train' and :
 
-    if run_type == 'test':
-        test(word_embed)
 
 
 if __name__ == '__main__':
