@@ -2,7 +2,6 @@ import tensorflow as tf
 from util import make_custom_embedding_matrix
 '''
 ESIM model for sentence pair embedding
-Currently Not implemented yet.
 Reference the existing ESIM Model Code, link is https://github.com/nyu-mll/multiNLI/blob/master/python/models/esim.py
 '''
 

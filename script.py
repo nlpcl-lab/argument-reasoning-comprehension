@@ -17,6 +17,7 @@ parser.add_argument('--reasoning_test_raw_fname',type=str,default='./data/train/
 parser.add_argument('--word_embed_glove_fname', type=str, default='./data/emb/glove.6B.300d.txt')
 parser.add_argument('--emb_dim', type=int, default=300)
 parser.add_argument('--snli_raw_path',type=str,default='./data/nli/snli_1.0/snli_1.0_{}.txt')
+parser.add_argument('--snli_bin_path',type=str,default='./data/nli/snli_1.0/snli_1.0_{}.bin')
 
 parser.add_argument("--use_pretrain", type=str, choices=['True', 'False'], default='True')
 
