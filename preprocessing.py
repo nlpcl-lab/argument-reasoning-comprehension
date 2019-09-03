@@ -3,8 +3,6 @@ import os
 import argparse
 from collections import Counter
 import re
-import numpy as np
-import tensorflow as tf
 from tensorflow.core.example import example_pb2
 from stanfordcorenlp import StanfordCoreNLP
 
