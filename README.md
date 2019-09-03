@@ -37,7 +37,7 @@ This is a repository for the codes, targeting a task: SemEval 2018 Task12, the a
 
 #### commands
 
-```
+```python
 # preprocess dataset
 python preprocessing.py
 # train ESIM model for transfer learning.
