@@ -23,7 +23,9 @@ class Model():
         self.max_seq_len = self.hps.max_enc_len
         self.vocab_size = self.hps.vocab_size
         self.emb_dim = self.hps.embed_dim
-        self.hidden_dim = self.hps.hidden_dim
+        self.hidden_dim = self.hps.main_hidden_dim
+        self.fcn_hidden_dim = self.hps.fcn_hidden_dim
+
         self.lr = self.hps.learning_rate
         self.l2_coeff = self.hps.l2_coeff
         self.clip_value = self.hps.max_grad_norm
@@ -181,8 +183,8 @@ class Model():
             concat0 = tf.concat([self.cw0_encode, self.rw0_encode, self.w0w1_encode, claim_avg, reason_avg, w0_avg, claim_max, reason_max, w0_max], axis=1)
             concat1 = tf.concat([self.cw1_encode, self.rw1_encode, self.w1w0_encode, claim_avg, reason_avg, w1_avg, claim_max, reason_max, w1_max], axis=1)
 
-            h0 = self._fully_connected(concat0, self.hidden_dim, 'h0_0')
-            h1 = self._fully_connected(concat1, self.hidden_dim, 'h1_0')
+            h0 = self._fully_connected(concat0, self.fcn_hidden_dim, 'h0_0')
+            h1 = self._fully_connected(concat1, self.fcn_hidden_dim, 'h1_0')
             with tf.variable_scope('w0_prob'):
                 w0_prob = self._fully_connected(h0, 1, 'h0_1')
             with tf.variable_scope('w1_prob'):

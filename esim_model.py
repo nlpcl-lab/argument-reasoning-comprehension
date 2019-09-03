@@ -24,7 +24,9 @@ class ESIM:
         self.max_seq_len = self.hps.max_enc_len
         self.vocab_size = self.hps.vocab_size
         self.emb_dim = self.hps.embed_dim
-        self.hidden_dim = self.hps.hidden_dim
+        self.hidden_dim = self.hps.esim_hidden_dim
+        self.fcn_hidden_dim = self.hps.fcn_hidden_dim
+
         self.lr = self.hps.learning_rate
         self.l2_coeff = self.hps.l2_coeff
         self.clip_value = self.hps.max_grad_norm
@@ -138,7 +140,7 @@ class ESIM:
     def _fully_connected_layer(self, inputs, scope):
         with tf.variable_scope(scope) as scope:
             inp1 = tf.nn.dropout(inputs, keep_prob=self.fcn_keeprate)
-            inp1 = tf.layers.dense(inp1, self.hidden_dim, tf.nn.tanh, kernel_initializer=self.initializer)
+            inp1 = tf.layers.dense(inp1, self.fcn_hidden_dim, tf.nn.tanh, kernel_initializer=self.initializer)
 
             inp2 = tf.nn.dropout(inp1, keep_prob=self.fcn_keeprate)
             logits = tf.layers.dense(inp2, 3, None, kernel_initializer=self.initializer)

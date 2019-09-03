@@ -33,7 +33,10 @@ parser.add_argument("--max_grad_norm", type=float, default=3)
 parser.add_argument("--vocab_size", type=int, default=50000)
 parser.add_argument('--l2_coeff', type=float,default=0.1)
 
-parser.add_argument("--hidden_dim", type=int, default=256)
+parser.add_argument("--esim_hidden_dim", type=int, default=200)
+parser.add_argument("--main_hidden_dim", type=int, default=100)
+parser.add_argument("--fcn_hidden_dim", type=int, default=128)
+
 parser.add_argument("--decoder_hidden_dim", type=int, default=384)
 parser.add_argument("--keep_rate", type=float, default=0.8)
 parser.add_argument("--max_epoch", type=int, default=20)
