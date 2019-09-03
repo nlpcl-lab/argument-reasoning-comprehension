@@ -34,6 +34,7 @@ def sample_generator(bin_fname, single_pass=False):
                 try:
                     label = example.features.feature['label'].bytes_list.value[0].decode()
                 except:
+                    assert 'test' in bin_fname
                     label = '-1'
                 yield (w0,w1,claim,reason,label)
 
@@ -54,7 +55,7 @@ class Example:
         self.is_nli = True
         self.hps, self.vocab = hps, voca
         sent0, sent1 = sent0.split()[:self.hps.max_enc_len], sent1.split()[:self.hps.max_enc_len]
-        self.sent1_len, self.sent1_len = len(sent0), len(sent1)
+        self.sent0_len, self.sent1_len = len(sent0), len(sent1)
         self.claim_len, self.reason_len = 0, 0
         if label in '01':  # reasoning example
             label = int(label)
@@ -79,8 +80,8 @@ class Example:
         self.sent0_input = self.vocab.text2ids(sent0)
         self.sent1_input = self.vocab.text2ids(sent1)
 
-        self.original_enc_text = ' '.join(sent0)
-        self.original_dec_text = ' '.join(sent1)
+        self.original_sent0_text = ' '.join(sent0)
+        self.original_sent1_text = ' '.join(sent1)
 
     def pad_enc_input(self, max_len):
         while len(self.sent0_input) < max_len:
@@ -105,31 +106,34 @@ class Batch():
         max_enc_len = max([ex.sent0_len for ex in example_list] + [ex.sent1_len for ex in example_list] + [ex.reason_len for ex in example_list] + [ex.claim_len for ex in example_list])
         for ex in example_list:
             ex.pad_enc_input(max_enc_len)
-        self.sent0_batch = np.zeros((self.hps.batch_size, max_enc_len), dtype=np.int32)
-        self.sent0_lens = np.zeros((self.hps.batch_size), dtype=np.int32)
-        self.sent1_batch = np.zeros((self.hps.batch_size, max_enc_len), dtype=np.int32)
-        self.sent1_lens = np.zeros((self.hps.batch_size), dtype=np.int32)
-        self.sent0_batch = np.zeros((self.hps.batch_size, max_enc_len), dtype=np.int32)
-        self.sent0_lens = np.zeros((self.hps.batch_size), dtype=np.int32)
-        self.sent1_batch = np.zeros((self.hps.batch_size, max_enc_len), dtype=np.int32)
-        self.sent1_lens = np.zeros((self.hps.batch_size), dtype=np.int32)
-        self.label = np.zeros((self.hps.batch_size,3), dtype=np.int32)
 
+        label_num = 3 if example_list[0].is_nli else 2
+        self.sent0_batch = np.zeros((self.hps.batch_size, max_enc_len), dtype=np.int32)
+        self.sent0_lens = np.zeros((self.hps.batch_size), dtype=np.int32)
+        self.sent1_batch = np.zeros((self.hps.batch_size, max_enc_len), dtype=np.int32)
+        self.sent1_lens = np.zeros((self.hps.batch_size), dtype=np.int32)
+        self.claim_batch = np.zeros((self.hps.batch_size, max_enc_len), dtype=np.int32)
+        self.claim_lens = np.zeros((self.hps.batch_size), dtype=np.int32)
+        self.reason_batch = np.zeros((self.hps.batch_size, max_enc_len), dtype=np.int32)
+        self.reason_lens = np.zeros((self.hps.batch_size), dtype=np.int32)
+        self.label = np.zeros((self.hps.batch_size,label_num), dtype=np.int32)
 
         # Fill enc batch
         for idx, ex in enumerate(example_list):
-            self.enc_batch[idx, :] = ex.enc_input[:]
-            self.enc_lens[idx] = ex.enc_len
-            for j in range(ex.enc_len):
-                self.enc_pad_mask[idx][j] = 1
+            self.sent0_batch[idx, :] = ex.sent0_input[:]
+            self.sent0_lens[idx] = ex.sent0_len
+            self.sent1_batch[idx, :] = ex.sent1_input[:]
+            self.sent1_lens[idx] = ex.sent1_len
+            self.label[idx][ex.label] = 1
+            if not ex.is_nli:
+                self.claim_batch[idx, :] = ex.claim_input[:]
+                self.claim_lens[idx] = ex.claim_len
+                self.reason_batch[idx, :] = ex.reason_input[:]
+                self.reason_lens[idx] = ex.reason_len
 
     def save_original_seq(self, example_list):
-        self.original_enc_text = [ex.original_enc_text for ex in example_list]
-        self.original_dec_text = [ex.original_dec_text for ex in example_list]
-        self.cids = [ex.cid for ex in example_list]
-        self.pids = [ex.pid for ex in example_list]
-        self.ppids = [ex.ppid for ex in example_list]
-
+        self.original_sent0_text = [ex.original_sent0_text for ex in example_list]
+        self.original_sent1_text = [ex.original_sent1_text for ex in example_list]
 
 class Batcher:
     def __init__(self, vocab, bin_path, hps):
@@ -138,7 +142,7 @@ class Batcher:
         self.bin_path = bin_path
         # bin_fname = args.split_data_path.format(setname).replace('.json', '.bin')
         self.hps = hps
-        self.single_pass = True if hps.mode == 'decode' else False
+        self.single_pass = True if 'eval' in hps.mode else False
 
         self.all_train_example = self.read_all_sample()
 

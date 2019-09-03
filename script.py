@@ -1,8 +1,6 @@
 import os
 import tensorflow as tf
 import argparse
-from preprocessing import reasoning_batch_generator, test_data_load, load_word_embedding_table
-from Config import MyConfig
 from model import Model
 
 
