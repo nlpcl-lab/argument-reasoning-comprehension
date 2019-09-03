@@ -109,3 +109,40 @@ def get_pretrain_weights(path):
             vardict[var] = sess.run(tf.get_default_graph().get_tensor_by_name(var))
     tf.reset_default_graph()
     return vardict
+
+def assign_pretrain_weights(pretrain_vardicts):
+    assign_op, uninitialized_varlist = [], []
+    all_variables = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)
+    assign_op_names = []
+
+    """
+    Pretrain Values:
+    esim/embed_matrix:0
+    esim/bidirectional_rnn/fw/basic_lstm_cell/kernel:0
+    esim/bidirectional_rnn/fw/basic_lstm_cell/bias:0
+    esim/bidirectional_rnn/bw/basic_lstm_cell/kernel:0
+    esim/bidirectional_rnn/bw/basic_lstm_cell/bias:0
+    esim/inference_composition/bidirectional_rnn/fw/basic_lstm_cell/kernel:0
+    esim/inference_composition/bidirectional_rnn/fw/basic_lstm_cell/bias:0
+    esim/inference_composition/bidirectional_rnn/bw/basic_lstm_cell/kernel:0
+    esim/inference_composition/bidirectional_rnn/bw/basic_lstm_cell/bias:0
+    esim/prediction_layer/dense/kernel:0
+    esim/prediction_layer/dense/bias:0
+    esim/prediction_layer/dense_1/kernel:0
+    esim/prediction_layer/dense_1/bias:0
+    """
+
+    for var in all_variables:
+        varname = var.name
+        new_model_var = tf.get_default_graph().get_tensor_by_name(varname)
+
+        if varname in pretrain_vardicts:
+            assign_op.append(tf.assign(new_model_var, pretrain_vardicts[varname]))
+            assign_op_names.append(varname)
+        else:
+            if 'esim' in varname:
+                print(varname)
+                raise ValueError
+            uninitialized_varlist.append(var)
+
+    return assign_op, uninitialized_varlist

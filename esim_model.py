@@ -58,10 +58,10 @@ class ESIM:
             enhance_pre, enhance_hyp = self._local_inference(pre_list, hyp_list)
 
             # Inference Composition & Pooling
-            final_vector = self._inference_composition(enhance_pre, enhance_hyp, scope='inference_composition')
+            self.final_vector = self._inference_composition(enhance_pre, enhance_hyp, scope='inference_composition')
 
             # Final inference layer
-            self.logits = self._fully_connected_layer(final_vector, 'prediction_layer')
+            self.logits = self._fully_connected_layer(self.final_vector, 'prediction_layer')
 
             self._build_op()
 
@@ -129,8 +129,8 @@ class ESIM:
 
             pre_avg = tf.reduce_mean(premise_outputs, axis=1)
             hyp_avg = tf.reduce_mean(hypothesis_outputs, axis=1)
-            pre_max = tf.reduce_mean(premise_outputs, axis=1)
-            hyp_max = tf.reduce_mean(hypothesis_outputs, axis=1)
+            pre_max = tf.reduce_max(premise_outputs, axis=1)
+            hyp_max = tf.reduce_max(hypothesis_outputs, axis=1)
 
             final_value = tf.concat([pre_avg, pre_max, hyp_avg, hyp_max], axis=1)
             return final_value
@@ -184,7 +184,6 @@ class ESIM:
 
     def run_step(self, batch,sess, fcn_keeprate=0.75, is_train=False):
         feeddict = self.make_feeddict(batch)
-
 
         to_return = {
             'loss': self.cost,

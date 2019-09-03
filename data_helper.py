@@ -26,7 +26,7 @@ def sample_generator(bin_fname, single_pass=False):
             example_str = struct.unpack('%ds' % str_len, reader.read(str_len))[0]
             example = example_pb2.Example.FromString(example_str)
 
-            if 'reasoning' in bin_fname:
+            if 'main' in bin_fname:
                 w0 = example.features.feature['w0'].bytes_list.value[0].decode()
                 w1 = example.features.feature['w1'].bytes_list.value[0].decode()
                 claim = example.features.feature['claim'].bytes_list.value[0].decode()
@@ -171,12 +171,12 @@ class Batcher:
         gen = sample_generator(self.bin_path, self.single_pass)
         while True:
             try:
-                if 'reasoning' in self.bin_path:
-                    w0, w1, claim, reason, label = next(gen)
-                    example = Example(w0, w1, label, claim, reason, self.vocab, self.hps)
-                elif 'nli' in self.bin_path:
+                if 'nli' in self.bin_path:
                     premise, hypo, label = next(gen)
                     example = Example(premise, hypo, label, None, None, self.vocab, self.hps)
+                elif 'main' in self.bin_path:
+                    w0, w1, claim, reason, label = next(gen)
+                    example = Example(w0, w1, label, claim, reason, self.vocab, self.hps)
                 else:
                     raise ValueError
 

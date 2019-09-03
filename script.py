@@ -10,13 +10,14 @@ import util
 parser = argparse.ArgumentParser()
 
 parser.add_argument('--mode',choices=['esim_train','esim_eval','train','eval'],help='Choose the mode to run.', default='nli_train')
-parser.add_argument('--model',choices=['esim','main'],help='Choose the mode to run.', default='esim')
+parser.add_argument('--model',choices=['esim','main'],help='Choose the mode to run.')
 
 
 parser.add_argument('--reasoning_train_raw_fname',type=str,default='./data/train/train-full.txt')
 parser.add_argument('--reasoning_dev_raw_fname',type=str,default='./data/train/dev-full.txt')
 parser.add_argument('--reasoning_test_raw_fname',type=str,default='./data/train/test-only-data.txt')
 parser.add_argument("--model_path", type=str, default="data/log/{}", help="Path to store the model checkpoints.")
+parser.add_argument('--pretrain_ckpt_path', type=str, default='./data/log/esim/exp/train/')
 parser.add_argument("--exp_name", type=str, default="exp", help="Path to store the model checkpoints.")
 parser.add_argument('--custom_embed_path', type=str, default='./data/emb/my_matrix')
 
@@ -43,6 +44,7 @@ args = parser.parse_args()
 
 def train(model, vocab, pretrain_vardicts=None):
     print('train function called.')
+    print(model.hps.data_path)
     train_data_loader = Batcher(vocab, model.hps.data_path, args)
     valid_data_loader = Batcher(vocab, model.hps.data_path.replace('train_', 'dev_'), args)
 
@@ -123,8 +125,8 @@ def main():
 
     vardicts = util.get_pretrain_weights(args.pretrain_ckpt_path) if args.mode == 'train' else None
 
-    if args.model == 'model':
-        model = Model()
+    if args.model == 'main':
+        model = Model(vocab, args)
     elif args.model == 'esim':
         model = ESIM(vocab, args)
     else:
