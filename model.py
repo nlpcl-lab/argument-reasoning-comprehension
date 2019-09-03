@@ -2,7 +2,6 @@ import numpy as np
 import tensorflow as tf
 import pickle
 from Config import MyConfig
-from preprocessing import load_word_embedding_table
 
 
 class Model():

@@ -23,6 +23,7 @@ parser.add_argument('--corenlp_path', type=str, default='./data/stanford_corenlp
 parser.add_argument('--word_embed_glove_fname', type=str, default='./data/emb/glove.6B.300d.txt')
 parser.add_argument('--emb_dim', type=int, default=300)
 
+parser.add_argument('--tokenize_strategy', choices=['corenlp','split'], default='split')
 parser.add_argument('--snli_raw_path',type=str,default='./data/nli/snli_1.0/snli_1.0_{}.txt')
 parser.add_argument('--snli_bin_path',type=str,default='./data/nli/snli_1.0/snli_1.0_{}.bin')
 
@@ -63,7 +64,7 @@ def read_reasoning_dataset(raw_path, setname):
                 'title': preprocess_sentence(split_line[titleIdx]),
                 'info': preprocess_sentence(split_line[infoIdx])
             }
-            if setname != 'test': to_return['label'] = int(split_line[labelIdx])
+            if setname != 'test': to_return['label'] = split_line[labelIdx]
 
             yield to_return
 
@@ -127,7 +128,7 @@ def build_vocab(snli_gen, reason_data, vocabpath='./data/vocab.txt', min_cnt=3):
 
     nli_common_words = counter.most_common()
     while len(vocab) < args.vocab_size and len(nli_common_words) != 0:
-        nli_word = nli_common_words.pop(0)
+        nli_word = nli_common_words.pop(0)[0]
         if nli_word not in vocab:
             vocab.append(nli_word)
 
@@ -177,8 +178,16 @@ def preprocess_sentence(sent):
     :param sent: (str)
     :return: preprocessed sentence (str)
     """
-    tokens = [tok.lower() for tok in nlp.word_tokenize(sent)]
+
+    if args.tokenize_strategy == 'corenlp':
+        tokens = [tok.lower() for tok in nlp.word_tokenize(sent)]
+    elif args.tokenize_strategy == 'split':
+        tokens = [tok.lower() for tok in sent.split()]
+    else:
+        raise ValueError
+
     new_tokens = []
+
     for tok in tokens:
         match = re.match(r"([0-9]+)([a-z]+)", tok, re.I)
         if match is not None:
@@ -226,5 +235,5 @@ if __name__ == '__main__':
     create_nli_binary_file(nli_test_gen, args.snli_bin_path.format('test'))
 
     create_reason_binary_file(reason_train, args.reasoning_bin_fname.format('train'))
-    create_reason_binary_file(reason_train, args.reasoning_bin_fname.format('dev'))
-    create_reason_binary_file(reason_train, args.reasoning_bin_fname.format('test'))
+    create_reason_binary_file(reason_dev, args.reasoning_bin_fname.format('dev'))
+    create_reason_binary_file(reason_test, args.reasoning_bin_fname.format('test'))

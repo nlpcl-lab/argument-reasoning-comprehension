@@ -3,6 +3,30 @@ import numpy as np
 import codecs
 import tensorflow as tf
 
+class Vocab():
+    def __init__(self, path='data/vocab.txt'):
+        self.word2id, self.id2word = {}, {}
+        self.vocabpath = path
+        self.read_voca()
+
+    def read_voca(self):
+        assert os.path.exists(self.vocabpath)
+        with open(self.vocabpath, 'r', encoding='utf8') as f:
+            ls = [line.strip() for line in f.readlines()]
+        for idx, word in enumerate(ls):
+            self.word2id[word] = idx
+            self.id2word[idx] = word
+        self.unk_id = self.word2id['<UNK>']
+        self.num_id = self.word2id['<NUM>']
+        self.pad_id = self.word2id['<PAD>']
+        self.words = list(self.word2id.keys())
+        self.word_sorted = ls
+
+    def text2ids(self, toks):
+        assert isinstance(toks, list) and all([isinstance(tok, str) for tok in toks])
+        ids = [self.word2id[tok] if tok in self.word2id else self.unk_id for tok in toks]
+        return ids
+
 def make_custom_embedding_matrix(vocab, hps):
     if os.path.exists(hps.custom_embed_path + '.npy'):
         mat = np.load(hps.custom_embed_path + '.npy')
