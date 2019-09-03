@@ -180,7 +180,15 @@ def preprocess_sentence(sent):
     if args.tokenize_strategy == 'corenlp':
         tokens = [tok.lower() for tok in nlp.word_tokenize(sent)]
     elif args.tokenize_strategy == 'split':
-        tokens = [tok.lower() for tok in sent.split()]
+        tmp_tokens = [tok.lower() for tok in sent.split()]
+        tokens = []
+        for tok in tmp_tokens:
+            if tok[-1] in '.,!':
+                tok = [tok[:-1],tok[-1]]
+            else:
+                tok = [tok]
+            tokens.extend(tok)
+
     else:
         raise ValueError
 

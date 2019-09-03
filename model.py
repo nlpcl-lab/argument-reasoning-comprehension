@@ -1,7 +1,7 @@
 import numpy as np
 import tensorflow as tf
 import pickle
-from Config import MyConfig
+
 
 
 class Model():
@@ -135,3 +135,23 @@ class Model():
     def predict(self, sess, claim, reason, w0, w1):
         pass
 
+
+    def train(self, sess, batch, fcn_keeprate=0.75):
+        feeddict = self.make_feeddict(batch)
+        feeddict[self.fcn_keeprate] = fcn_keeprate
+        return sess.run([self.train_op, self.cost, self.acc, self.summaries], feed_dict=feeddict)
+
+    def test(self, sess, batch):
+        feeddict = self.make_feeddict(batch)
+        return sess.run([self.cost, self.acc, self.summaries], feed_dict=feeddict)
+        # Dropout rate
+
+    def make_feeddict(self, batch):
+        feed_dict = {}
+        feed_dict[self.premise_batch] = batch.sent0_batch
+        feed_dict[self.premise_len] = batch.sent0_lens
+        feed_dict[self.hypothesis_batch] = batch.sent1_batch
+        feed_dict[self.hypothesis_len] = batch.sent1_lens
+        feed_dict[self.label] = batch.label
+
+        return feed_dict

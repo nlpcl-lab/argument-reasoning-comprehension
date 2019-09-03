@@ -9,38 +9,42 @@ class ESIM:
     def __init__(self, vocab, hps):
         self.hps = hps
         self.vocab = vocab
+        self.global_step = tf.Variable(0, trainable=False, name='global_step')
+
         self._init_hparams()
         self._add_placeholder()
         self._build_model()
 
-        self.global_step = tf.Variable(0, trainable=False, name='global_step')
         self.saver = tf.train.Saver(tf.global_variables())
         self.summaries = tf.summary.merge_all()
 
-    def  _init_hparams(self):
+    def _init_hparams(self):
+        print("init hparams")
+        self.batch_size = self.hps.batch_size
         self.max_seq_len = self.hps.max_enc_len
         self.vocab_size = self.hps.vocab_size
-        self.emb_dim = self.hps.emb_dim
+        self.emb_dim = self.hps.embed_dim
         self.hidden_dim = self.hps.hidden_dim
-        self.lr = self.hps.lr
+        self.lr = self.hps.learning_rate
         self.l2_coeff = self.hps.l2_coeff
         self.clip_value = self.hps.max_grad_norm
 
     def _add_placeholder(self):
+        print("add placeholder")
         # Data batch
-        self.premise_batch = tf.placeholder(tf.int32, [None, None], name='hyp_input')
-        self.hypothesis_batch = tf.placeholder(tf.int32, [None, None], name='pre_input')
-        self.label = tf.placeholder(tf.int32, [None, 3], name='label')
-        self.premise_len = tf.placeholder(tf.int32, shape=(), name='premise_len')
-        self.hypothesis_len = tf.placeholder(tf.int32, shape=(), name='hypothesis_len')
+        self.premise_batch = tf.placeholder(tf.int32, [self.batch_size, self.max_seq_len], name='hyp_input')
+        self.hypothesis_batch = tf.placeholder(tf.int32, [self.batch_size, self.max_seq_len], name='pre_input')
+        self.label = tf.placeholder(tf.int32, [self.batch_size, 3], name='label')
+        self.premise_len = tf.placeholder(tf.int32, shape=[self.batch_size], name='premise_len')
+        self.hypothesis_len = tf.placeholder(tf.int32, shape=[self.batch_size], name='hypothesis_len')
         # Dropout rate
         self.rnn_keeprate = tf.placeholder_with_default(1.0, shape=(), name='rnn_keep_rate')
         self.fcn_keeprate = tf.placeholder_with_default(1.0, shape=(), name='fcn_keep_rate')
 
     def add_embedding(self):
         self.embedding_matrix = make_custom_embedding_matrix(self.vocab, self.hps)
-        self.emb_premise = tf.nn.embedding_lookup(self.embedding_matrix, self.premise_len)
-        self.emb_hypothesis = tf.nn.embedding_lookup(self.embedding_matrix, self.hypothesis_len)
+        self.emb_premise = tf.nn.embedding_lookup(self.embedding_matrix, self.premise_batch)
+        self.emb_hypothesis = tf.nn.embedding_lookup(self.embedding_matrix, self.hypothesis_batch)
 
     def _build_model(self):
         with tf.variable_scope('esim'):
@@ -137,7 +141,7 @@ class ESIM:
             inp1 = tf.layers.dense(inp1, self.hidden_dim, tf.nn.tanh, kernel_initializer=self.initializer)
 
             inp2 = tf.nn.dropout(inp1, keep_prob=self.fcn_keeprate)
-            logits = tf.layers.dense(inp2, self.hidden_dim, None, kernel_initializer=self.initializer)
+            logits = tf.layers.dense(inp2, 3, None, kernel_initializer=self.initializer)
             return logits
 
     def _build_op(self):
@@ -178,20 +182,29 @@ class ESIM:
         cell = tf.nn.rnn_cell.DropoutWrapper(cell,output_keep_prob=keep_rate)
         return cell
 
-    def train(self, sess, hyp, pre, label, hyp_len, pre_len):
-        return sess.run([self.train_op, self.cost, self.acc, self.summaries], feed_dict={
-            self.hypothesis_batch: hyp,
-            self.hypothesis_len: hyp_len,
-            self.premise_batch: pre,
-            self.premise_len: pre_len,
-            self.label: label
-        })
+    def run_step(self, batch,sess, fcn_keeprate=0.75, is_train=False):
+        feeddict = self.make_feeddict(batch)
 
-    def test(self, sess, hyp, pre, label, hyp_len, pre_len):
-        return sess.run([self.cost, self.acc, self.summaries], feed_dict={
-            self.hypothesis_batch:hyp,
-            self.hypothesis_len:hyp_len,
-            self.premise_batch:pre,
-            self.premise_len:pre_len,
-            self.label:label
-        })
+
+        to_return = {
+            'loss': self.cost,
+            'accuracy':self.acc,
+            'summaries':self.summaries,
+            'global_step': self.global_step
+        }
+        if is_train:
+            to_return['train_op'] = self.train_op
+            feeddict[self.fcn_keeprate] = fcn_keeprate
+
+        return sess.run(to_return, feed_dict=feeddict)
+
+
+    def make_feeddict(self, batch):
+        feed_dict = {}
+        feed_dict[self.premise_batch] = batch.sent0_batch
+        feed_dict[self.premise_len] = batch.sent0_lens
+        feed_dict[self.hypothesis_batch] = batch.sent1_batch
+        feed_dict[self.hypothesis_len] = batch.sent1_lens
+        feed_dict[self.label] = batch.label
+
+        return feed_dict

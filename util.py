@@ -95,27 +95,17 @@ def assign_specific_gpu(gpu_nums='-1'):
     os.environ['CUDA_DEVICE_ORDER'] = 'PCI_BUS_ID'
     os.environ['CUDA_VISIBLE_DEVICES'] = gpu_nums
 
-class Vocab():
-    def __init__(self, path='data/vocab.txt'):
-        self.word2id, self.id2word = {}, {}
-        self.vocabpath = path
-        self.read_voca()
 
-    def read_voca(self):
-        assert os.path.exists(self.vocabpath)
-        with open(self.vocabpath, 'r', encoding='utf8') as f:
-            ls = [line.strip() for line in f.readlines()]
-        for idx, word in enumerate(ls):
-            self.word2id[word] = idx
-            self.id2word[idx] = word
-        self.unk_id = self.word2id['<UNK>']
-        self.beg_id = self.word2id['<BEG>']
-        self.eos_id = self.word2id['<EOS>']
-        self.pad_id = self.word2id['<PAD>']
-        self.words = list(self.word2id.keys())
-        self.word_sorted = ls
-
-    def text2ids(self, toks):
-        assert isinstance(toks, list) and all([isinstance(tok, str) for tok in toks])
-        ids = [self.word2id[tok] if tok in self.word2id else self.unk_id for tok in toks]
-        return ids
+def get_pretrain_weights(path):
+    """ Load pretrain weights and save """
+    with tf.Session(config=gpu_config()) as sess:
+        ckpt_name = tf.train.latest_checkpoint(path)
+        meta_name = ckpt_name + '.meta'
+        save_graph = tf.train.import_meta_graph(meta_name)
+        save_graph.restore(sess, ckpt_name)
+        var_name_list = [var.name for var in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)]
+        vardict = dict()
+        for var in var_name_list:
+            vardict[var] = sess.run(tf.get_default_graph().get_tensor_by_name(var))
+    tf.reset_default_graph()
+    return vardict

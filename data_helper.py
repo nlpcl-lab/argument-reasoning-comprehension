@@ -60,13 +60,12 @@ class Example:
         if label in '01':  # reasoning example
             label = int(label)
             self.is_nli = False
-            assert claim is None and reason is None
-        else:
             claim, reason = claim.split()[:self.hps.max_enc_len], reason.split()[:self.hps.max_enc_len]
             self.claim_len, self.reason_len = len(claim), len(reason)
             self.claim_input = self.vocab.text2ids(claim)
             self.reason_input = self.vocab.text2ids(reason)
-
+        else:
+            assert claim is None and reason is None
             if label == 'neutral':
                 label = 0
             elif label =='contradiction':
@@ -103,7 +102,7 @@ class Batch():
         self.save_original_seq(example_list)
 
     def init_enc_seq(self, example_list):
-        max_enc_len = max([ex.sent0_len for ex in example_list] + [ex.sent1_len for ex in example_list] + [ex.reason_len for ex in example_list] + [ex.claim_len for ex in example_list])
+        max_enc_len = self.hps.max_enc_len #max([ex.sent0_len for ex in example_list] + [ex.sent1_len for ex in example_list] + [ex.reason_len for ex in example_list] + [ex.claim_len for ex in example_list])
         for ex in example_list:
             ex.pad_enc_input(max_enc_len)
 
@@ -144,8 +143,6 @@ class Batcher:
         self.hps = hps
         self.single_pass = True if 'eval' in hps.mode else False
 
-        self.all_train_example = self.read_all_sample()
-
         QUEUE_MAX_SIZE = 50
         self.batch_cache_size = 50
         self.batch_queue = Queue(QUEUE_MAX_SIZE)
@@ -158,19 +155,6 @@ class Batcher:
         self.batch_thread = Thread(target=self.fill_batch_queue)
         self.batch_thread.daemon = True
         self.batch_thread.start()
-
-    def read_all_sample(self):
-        with open(self.bin_path.replace('.bin', '.json'), 'r', encoding='utf8') as f:
-            data = json.load(f)
-        ex_list = []
-        for cid in data:
-            text = data[cid]['text']
-            for pid in data[cid]['pers']:
-                for ppid in data[cid]['pers'][pid]:
-                    ex = Example(' '.join(text), ' '.join(data[cid]['pers'][pid][ppid]), cid, pid, ppid, self.vocab, self.hps)
-                    ex_list.append(ex)
-        shuffle(ex_list)
-        return ex_list
 
     def next_batch(self):
         if self.batch_queue.qsize() == 0:
