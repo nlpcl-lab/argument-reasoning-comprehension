@@ -26,11 +26,11 @@ parser.add_argument('--embed_dim', type=int, default=300)
 parser.add_argument('--snli_raw_path',type=str,default='./data/nli/snli_1.0/snli_1.0_{}.txt')
 parser.add_argument('--snli_bin_path',type=str,default='./data/nli/snli_1.0/snli_1.0_{}.bin')
 
-parser.add_argument("--batch_size", type=int, default=16)
+parser.add_argument("--batch_size", type=int, default=32)
 parser.add_argument("--max_enc_len", type=int, default=50)
 parser.add_argument("--learning_rate", type=float, default=5e-4)
 parser.add_argument("--max_grad_norm", type=float, default=3)
-parser.add_argument("--vocab_size", type=int, default=50000)
+parser.add_argument("--vocab_size", type=int, default=20000)
 parser.add_argument('--l2_coeff', type=float,default=0.1)
 
 parser.add_argument("--esim_hidden_dim", type=int, default=200)
@@ -38,7 +38,8 @@ parser.add_argument("--main_hidden_dim", type=int, default=100)
 parser.add_argument("--fcn_hidden_dim", type=int, default=128)
 
 parser.add_argument("--decoder_hidden_dim", type=int, default=384)
-parser.add_argument("--keep_rate", type=float, default=0.8)
+parser.add_argument("--rnn_keep_rate", type=float, default=0.8)
+parser.add_argument("--fcn_keep_rate", type=float, default=0.8)
 parser.add_argument("--max_epoch", type=int, default=20)
 parser.add_argument("--gpu_nums", type=str, default='0')
 
@@ -79,7 +80,7 @@ def train(model, vocab, pretrain_vardicts=None):
             batch = train_data_loader.next_batch()
             sample_per_epoch = 550153 if 'esim' in model.hps.mode else 1211
 
-            res = model.run_step(batch, sess, fcn_keeprate=model.hps.keep_rate, is_train=True)
+            res = model.run_step(batch, sess, fcn_keeprate=model.hps.fcn_keep_rate, rnn_keeprate=model.hps.rnn_keep_rate, is_train=True)
 
             loss, summaries, step = res['loss'], res['summaries'], res['global_step']
 
@@ -90,7 +91,7 @@ def train(model, vocab, pretrain_vardicts=None):
 
             if step % 5 == 0:
                 dev_batch = valid_data_loader.next_batch()
-                res = model.run_step(dev_batch, sess, is_train=False)
+                res = model.run_step(dev_batch, sess, fcn_keeprate=-1, rnn_keeprate=-1, is_train=False)
                 loss, summaries, step = res['loss'], res['summaries'], res['global_step']
                 assert step % 5 == 0
                 print("[VALID] {} loss".format(round(loss, 3)))
@@ -106,7 +107,9 @@ def train(model, vocab, pretrain_vardicts=None):
 
 
 def main():
-    if 'train' not in args.mode: args.keep_rate = 1.0
+    if 'train' not in args.mode:
+        args.rnn_keep_rate = 1.0
+        args.fcn_keep_rate = 1.0
     args.data_path = './data/nli/snli_1.0/snli_1.0_train.bin' if 'esim' in args.mode else './data/main/train_binary.bin'
 
     args.model_path = os.path.join(args.model_path, args.exp_name).format(args.model)

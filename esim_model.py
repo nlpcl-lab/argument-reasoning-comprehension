@@ -150,11 +150,16 @@ class ESIM:
         # loss
         self.prediction_cost = tf.reduce_mean(
             tf.nn.softmax_cross_entropy_with_logits(logits=self.logits, labels=self.label), name='loss')
-        self.regularization_cost = tf.losses.get_regularization_loss()
         tf.summary.scalar('prediction_loss', self.prediction_cost)
-        tf.summary.scalar('regularization_loss', self.regularization_cost)
 
-        self.cost = self.prediction_cost + self.l2_coeff * self.regularization_cost
+        # weights = [v for v in tf.trainable_variables() if
+        #            ('kernel' in v.name) or ('layer' in v.name) or ('w' in v.name)]
+        #
+        # self.regularization_cost = tf.add_n([tf.nn.l2_loss(w) for w in weights])
+        #
+        # tf.summary.scalar('regularization_loss', self.regularization_cost)
+
+        self.cost = self.prediction_cost# + self.l2_coeff * self.regularization_cost
 
         # acc
         label_pred = tf.argmax(self.logits, 1, name='label_pred')
@@ -184,7 +189,7 @@ class ESIM:
         cell = tf.nn.rnn_cell.DropoutWrapper(cell,output_keep_prob=keep_rate)
         return cell
 
-    def run_step(self, batch,sess, fcn_keeprate=0.75, is_train=False):
+    def run_step(self, batch,sess, fcn_keeprate, rnn_keeprate, is_train=False):
         feeddict = self.make_feeddict(batch)
 
         to_return = {
@@ -196,6 +201,7 @@ class ESIM:
         if is_train:
             to_return['train_op'] = self.train_op
             feeddict[self.fcn_keeprate] = fcn_keeprate
+            feeddict[self.rnn_keeprate] = rnn_keeprate
 
         return sess.run(to_return, feed_dict=feeddict)
 

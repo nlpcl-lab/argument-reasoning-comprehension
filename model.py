@@ -205,7 +205,17 @@ class Model():
         return activation_layer
 
     def _build_ops(self,logits,targets):
-        cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=targets), name='loss') + tf.losses.get_regularization_loss()
+        cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=targets), name='loss')
+        tf.summary.scalar('prediction_loss', cost)
+
+        # weights = [v for v in tf.trainable_variables() if
+        #            ('kernel' in v.name) or ('layer' in v.name) or ('w' in v.name)]
+        #
+        # regularization_cost = tf.add_n([tf.nn.l2_loss(w) for w in weights])
+        #
+        # tf.summary.scalar('regularization_loss', regularization_cost)
+
+        cost = cost #+ self.l2_coeff * regularization_cost
 
         acc = tf.reduce_mean(tf.cast(tf.equal(tf.argmax(targets,1),tf.argmax(logits,1)),tf.float32))
 
@@ -237,7 +247,7 @@ class Model():
         cell = tf.nn.rnn_cell.DropoutWrapper(cell,output_keep_prob=keep_rate)
         return cell
 
-    def run_step(self, batch,sess, fcn_keeprate=0.75, is_train=False):
+    def run_step(self, batch,sess, fcn_keeprate, rnn_keeprate, is_train=False):
         feeddict = self.make_feeddict(batch)
 
         to_return = {
@@ -249,6 +259,7 @@ class Model():
         if is_train:
             to_return['train_op'] = self.train_op
             feeddict[self.fcn_keeprate] = fcn_keeprate
+            feeddict[self.rnn_keeprate] = rnn_keeprate
 
         return sess.run(to_return, feed_dict=feeddict)
 
