@@ -187,15 +187,15 @@ class Batcher:
         gen = sample_generator(self.bin_path, self.single_pass)
         while True:
             try:
-                if 'wikitext' not in self.bin_path:
-                    if self.hps.model == 'mmi_bidi' and self.hps.mode == 'train':  # Reverse!
-                        dec_text, enc_text, cid, pid, ppid = next(gen)
-                    else:
-                        enc_text, dec_text, cid, pid, ppid = next(gen)
-                    example = Example(enc_text, dec_text, cid, pid, ppid, self.vocab, self.hps)
+                if 'reasoning' in self.bin_path:
+                    w0, w1, claim, reason, label = next(gen)
+                    example = Example(w0, w1, label, claim, reason, self.vocab, self.hps)
+                elif 'nli' in self.bin_path:
+                    premise, hypo, label = next(gen)
+                    example = Example(premise, hypo, label, None, None, self.vocab, self.hps)
                 else:
-                    text = next(gen)
-                    example = LMExample(text, self.vocab, self.hps)
+                    raise ValueError
+
             except Exception as err:
                 print("Error while fill example queue: {}".format(self.example_queue.qsize()))
                 assert self.single_pass
@@ -205,30 +205,18 @@ class Batcher:
     def fill_batch_queue(self):
         while True:
             if not self.single_pass:
-                assert self.hps.mode != 'decode'
                 inputs = []
                 for _ in range(self.hps.batch_size * self.batch_cache_size):
                     inputs.append(self.example_queue.get())
-                if 'wikitext' not in self.bin_path:
-                    inputs = sorted(inputs, key=lambda x: x.enc_len)
-                else:
-                    inputs = sorted(inputs, key=lambda x: x.text_len)
+
                 batches = []
                 for idx in range(0, len(inputs), self.hps.batch_size):
                     batches.append(inputs[idx:idx + self.hps.batch_size])
                 if not self.single_pass:
                     shuffle(batches)
                 for bat in batches:
-                    if 'wikitext' not in self.bin_path:
-                        self.batch_queue.put(Batch(bat, self.hps, self.vocab))
-                    else:
-                        self.batch_queue.put(LMBatch(bat, self.hps, self.vocab))
+                    self.batch_queue.put(Batch(bat, self.hps, self.vocab))
             else:
-                assert self.hps.mode == 'decode'
                 sample = self.example_queue.get()
                 bat = [sample for _ in range(self.hps.batch_size)]
-
-                if 'wikitext' not in self.bin_path:
-                    self.batch_queue.put(Batch(bat, self.hps, self.vocab))
-                else:
-                    self.batch_queue.put(LMBatch(bat, self.hps, self.vocab))
+                self.batch_queue.put(Batch(bat, self.hps, self.vocab))
