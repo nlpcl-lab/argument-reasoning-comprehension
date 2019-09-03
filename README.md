@@ -37,15 +37,23 @@ This is a repository for the codes, targeting a task: SemEval 2018 Task12, the a
 
 #### commands
 
-```python
-# preprocess dataset
+
+Preprocess dataset
+```
 python preprocessing.py
-# train ESIM model for transfer learning.
+```
+Train ESIM model for transfer learning.
+```
 python script.py --mode=esim_train --model=esim
-# train main model with pretrained ESIM model.
+```
+Train main model with pretrained ESIM model.
+```
 python script.py --mode=train --model=main
 ```
-
+Evaluation (TBD)
+```
+python script.py --mode=eval
+```
 
 
 #### Package Structure
