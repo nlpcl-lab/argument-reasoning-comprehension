@@ -17,7 +17,7 @@ This is a repository for the codes, targeting a task: SemEval 2018 Task12, the a
 - numpy==1.16.2
 - stanfordcorenlp=3.9.1.1 (optional)
 
-### 
+
 
 #### Prerequistes
 
@@ -33,7 +33,7 @@ This is a repository for the codes, targeting a task: SemEval 2018 Task12, the a
 
 4. Locate the above resource into appropriate location, followed by the package structure below.
 
-### 
+
 
 #### commands
 
@@ -41,11 +41,9 @@ This is a repository for the codes, targeting a task: SemEval 2018 Task12, the a
 # preprocess dataset
 python preprocessing.py
 # train ESIM model for transfer learning.
-python script.py --mode=nli_train
+python script.py --mode=esim_train --model=esim
 # train main model with pretrained ESIM model.
-python script.py --mode=train
-# Evaluation
-python script.py --mode=eval
+python script.py --mode=train --model=main
 ```
 
 
@@ -61,6 +59,7 @@ python script.py --mode=eval
 │     └── esim_model.py
 │     └── model.py
 │     └── data/
+│     		└──── log/ (Trained models and logs are here.)
 │     		└──── emb/
 │ 		    		└──── glove.6B.300d.txt
 │     		└──── main/
