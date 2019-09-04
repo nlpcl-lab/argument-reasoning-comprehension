@@ -139,11 +139,13 @@ class ESIM:
 
     def _fully_connected_layer(self, inputs, scope):
         with tf.variable_scope(scope) as scope:
+            regularizer = tf.contrib.layers.l2_regularizer(scale=self.l2_coeff)
+
             inp1 = tf.nn.dropout(inputs, keep_prob=self.fcn_keeprate)
-            inp1 = tf.layers.dense(inp1, self.fcn_hidden_dim, tf.nn.tanh, kernel_initializer=self.initializer)
+            inp1 = tf.layers.dense(inp1, self.fcn_hidden_dim, tf.nn.tanh, kernel_initializer=self.initializer, kernel_regularizer=regularizer)
 
             inp2 = tf.nn.dropout(inp1, keep_prob=self.fcn_keeprate)
-            logits = tf.layers.dense(inp2, 3, None, kernel_initializer=self.initializer)
+            logits = tf.layers.dense(inp2, 3, None, kernel_initializer=self.initializer, kernel_regularizer=regularizer)
             return logits
 
     def _build_op(self):
@@ -152,14 +154,10 @@ class ESIM:
             tf.nn.softmax_cross_entropy_with_logits(logits=self.logits, labels=self.label), name='loss')
         tf.summary.scalar('prediction_loss', self.prediction_cost)
 
-        # weights = [v for v in tf.trainable_variables() if
-        #            ('kernel' in v.name) or ('layer' in v.name) or ('w' in v.name)]
-        #
-        # self.regularization_cost = tf.add_n([tf.nn.l2_loss(w) for w in weights])
-        #
-        # tf.summary.scalar('regularization_loss', self.regularization_cost)
+        self.regularization_cost = tf.losses.get_regularization_loss()
+        tf.summary.scalar('regularization_loss', self.regularization_cost)
 
-        self.cost = self.prediction_cost# + self.l2_coeff * self.regularization_cost
+        self.cost = self.prediction_cost + self.regularization_cost
 
         # acc
         label_pred = tf.argmax(self.logits, 1, name='label_pred')
