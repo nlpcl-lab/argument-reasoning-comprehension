@@ -5,7 +5,7 @@ from collections import Counter
 import re
 from tensorflow.core.example import example_pb2
 from stanfordcorenlp import StanfordCoreNLP
-
+from nltk.tokenize import word_tokenize
 
 parser = argparse.ArgumentParser()
 
@@ -21,7 +21,7 @@ parser.add_argument('--corenlp_path', type=str, default='./data/stanford_corenlp
 parser.add_argument('--word_embed_glove_fname', type=str, default='./data/emb/glove.6B.300d.txt')
 parser.add_argument('--emb_dim', type=int, default=300)
 
-parser.add_argument('--tokenize_strategy', choices=['corenlp','split'], default='corenlp')
+parser.add_argument('--tokenize_strategy', choices=['corenlp','split', 'nltk'], default='nltk')
 parser.add_argument('--snli_raw_path',type=str,default='./data/nli/snli_1.0/snli_1.0_{}.txt')
 parser.add_argument('--snli_bin_path',type=str,default='./data/nli/snli_1.0/snli_1.0_{}.bin')
 
@@ -81,7 +81,7 @@ def nli_dataset_generator(raw_path, setname):
     read_headline = False
     with open(fullpath) as f:
         for line in f:
-            print(setname, cnt)
+            if cnt % 1000 == 0: print(setname, cnt)
             split_line = line.strip().split('\t')
             if split_line[0] not in ['neutral', 'contradiction', 'entailment']:
                 if read_headline: continue
@@ -174,7 +174,7 @@ def create_nli_binary_file(data_gen, binfname):
 def preprocess_sentence(sent):
     """
     Preprocess the raw sentence. The step of processing is like below.
-    1. Tokenize using CoreNLP
+    1. Tokenize
 
     :param sent: (str)
     :return: preprocessed sentence (str)
@@ -191,6 +191,8 @@ def preprocess_sentence(sent):
             else:
                 tok = [tok]
             tokens.extend(tok)
+    elif args.tokenize_strategy == 'nltk':
+        tokens = [tok.lower() for tok in word_tokenize(sent)]
     else:
         raise ValueError
 

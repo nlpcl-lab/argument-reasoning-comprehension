@@ -44,6 +44,7 @@ class ESIM:
         self.fcn_keeprate = tf.placeholder_with_default(1.0, shape=(), name='fcn_keep_rate')
 
     def add_embedding(self):
+        print('Add embedding')
         self.embedding_matrix = make_custom_embedding_matrix(self.vocab, self.hps)
         self.emb_premise = tf.nn.embedding_lookup(self.embedding_matrix, self.premise_batch)
         self.emb_hypothesis = tf.nn.embedding_lookup(self.embedding_matrix, self.hypothesis_batch)
