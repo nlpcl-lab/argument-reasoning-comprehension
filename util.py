@@ -137,11 +137,12 @@ def assign_pretrain_weights(pretrain_vardicts):
         new_model_var = tf.get_default_graph().get_tensor_by_name(varname)
 
         if varname in pretrain_vardicts:
+            print('[&&]', varname)
             assign_op.append(tf.assign(new_model_var, pretrain_vardicts[varname]))
             assign_op_names.append(varname)
         else:
             if 'esim' in varname:
-                print(varname)
+                print('[*]', varname)
                 raise ValueError
             uninitialized_varlist.append(var)
 

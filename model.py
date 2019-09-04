@@ -24,6 +24,7 @@ class Model():
         self.vocab_size = self.hps.vocab_size
         self.emb_dim = self.hps.embed_dim
         self.hidden_dim = self.hps.main_hidden_dim
+        self.esim_hidden_dim = self.hps.esim_hidden_dim
         self.fcn_hidden_dim = self.hps.fcn_hidden_dim
 
         self.lr = self.hps.learning_rate
@@ -60,7 +61,7 @@ class Model():
     def build_ESIM_sentence_encoding(self):
         print('add pretrain ESIM')
         with tf.variable_scope('esim'):
-            fw_cell, bw_cell = self._build_cells(self.rnn_keeprate, 'input_encoding')
+            fw_cell, bw_cell = self._build_cells(self.rnn_keeprate, 'input_encoding', self.esim_hidden_dim)
 
             claim_outputs, claim_states = tf.nn.bidirectional_dynamic_rnn(fw_cell, bw_cell,
                                                                       self.emb_claim,
@@ -124,7 +125,7 @@ class Model():
 
     def _inference_composition(self, enhance_pre, enhance_hyp, scope='inference_composition'):
         with tf.variable_scope(scope, reuse=tf.AUTO_REUSE) as scope:
-            fw_cell, bw_cell = self._build_cells(self.rnn_keeprate, scope)
+            fw_cell, bw_cell = self._build_cells(self.rnn_keeprate, scope, self.esim_hidden_dim)
 
             v1_outputs, v1_states = tf.nn.bidirectional_dynamic_rnn(fw_cell,bw_cell,
                                                                     enhance_pre,
@@ -148,9 +149,9 @@ class Model():
         print('build model')
         with tf.variable_scope("mainmodel") as scope:
             self.add_embedding()
-            claim_enc_fw, claim_enc_bw = self._build_cells(self.rnn_keeprate, scope='encode_claim')
-            reason_enc_fw, reason_enc_bw = self._build_cells(self.rnn_keeprate, scope='encode_reason')
-            w_enc_fw, w_enc_bw = self._build_cells(self.rnn_keeprate, scope='encode_warrant')
+            claim_enc_fw, claim_enc_bw = self._build_cells(self.rnn_keeprate, scope='encode_claim', hidden_dim=self.hidden_dim)
+            reason_enc_fw, reason_enc_bw = self._build_cells(self.rnn_keeprate, scope='encode_reason', hidden_dim=self.hidden_dim)
+            w_enc_fw, w_enc_bw = self._build_cells(self.rnn_keeprate, scope='encode_warrant', hidden_dim=self.hidden_dim)
             with tf.variable_scope('ciam_enc'):
                 claim_outputs, claim_states = tf.nn.bidirectional_dynamic_rnn(claim_enc_fw, claim_enc_bw, self.emb_claim,
                                                                               dtype=tf.float32)
@@ -237,13 +238,13 @@ class Model():
         train_op = optimizer.apply_gradients(zip(grads, tvars), global_step=self.global_step, name='train_step')
         return train_op
 
-    def _build_cells(self, keep_rate, scope):
+    def _build_cells(self, keep_rate, scope, hidden_dim):
         with tf.variable_scope(scope, reuse=tf.AUTO_REUSE):
-            fw_cell, bw_cell = [self._cell(keep_rate) for _ in range(2)]
+            fw_cell, bw_cell = [self._cell(keep_rate, hidden_dim) for _ in range(2)]
             return fw_cell, bw_cell
 
-    def _cell(self, keep_rate):
-        cell = tf.nn.rnn_cell.BasicLSTMCell(self.hidden_dim)
+    def _cell(self, keep_rate, hidden_dim):
+        cell = tf.nn.rnn_cell.BasicLSTMCell(hidden_dim)
         cell = tf.nn.rnn_cell.DropoutWrapper(cell,output_keep_prob=keep_rate)
         return cell
 
