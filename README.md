@@ -50,9 +50,9 @@ Train main model with pretrained ESIM model.
 ```
 python script.py --mode=train --model=main
 ```
-Evaluation (TBD)
+Evaluation 
 ```
-python script.py --mode=eval
+python script.py --mode=eval --model=main
 ```
 
 
@@ -81,6 +81,14 @@ python script.py --mode=eval
 │				     		└──── snli_1.0.test.txt
 │     		└──── stanford_corenlp/
 │			     		└──── (Unziped parser data)
+```
+
+
+
+#### Results (TBD)
+
+```
+Testset accuracy: %
 ```
 
 
