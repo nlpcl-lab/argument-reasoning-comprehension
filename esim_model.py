@@ -203,7 +203,6 @@ class ESIM:
 
         return sess.run(to_return, feed_dict=feeddict)
 
-
     def make_feeddict(self, batch):
         feed_dict = {}
         feed_dict[self.premise_batch] = batch.sent0_batch
@@ -213,3 +212,10 @@ class ESIM:
         feed_dict[self.label] = batch.label
 
         return feed_dict
+
+    def run_eval(self, batch, sess):
+        feeddict = self.make_feeddict(batch)
+        to_return = {
+            'accuracy':self.acc
+        }
+        return sess.run(to_return, feed_dict=feeddict)

@@ -189,6 +189,7 @@ class Batcher:
     def fill_batch_queue(self):
         while True:
             if not self.single_pass:
+                assert 'eval' not in self.hps.mode
                 inputs = []
                 for _ in range(self.hps.batch_size * self.batch_cache_size):
                     inputs.append(self.example_queue.get())
@@ -201,6 +202,7 @@ class Batcher:
                 for bat in batches:
                     self.batch_queue.put(Batch(bat, self.hps, self.vocab))
             else:
+                assert 'eval' in self.hps.mode
                 sample = self.example_queue.get()
                 bat = [sample for _ in range(self.hps.batch_size)]
                 self.batch_queue.put(Batch(bat, self.hps, self.vocab))

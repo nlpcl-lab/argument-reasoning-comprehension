@@ -21,12 +21,12 @@ parser.add_argument('--corenlp_path', type=str, default='./data/stanford_corenlp
 parser.add_argument('--word_embed_glove_fname', type=str, default='./data/emb/glove.6B.300d.txt')
 parser.add_argument('--emb_dim', type=int, default=300)
 
-parser.add_argument('--tokenize_strategy', choices=['corenlp','split'], default='split')
+parser.add_argument('--tokenize_strategy', choices=['corenlp','split'], default='corenlp')
 parser.add_argument('--snli_raw_path',type=str,default='./data/nli/snli_1.0/snli_1.0_{}.txt')
 parser.add_argument('--snli_bin_path',type=str,default='./data/nli/snli_1.0/snli_1.0_{}.bin')
 
 parser.add_argument('--vocab_path', type=str, default='./data/vocab.txt')
-parser.add_argument("--vocab_size", type=int, default=20000)
+parser.add_argument("--vocab_size", type=int, default=40000)
 parser.add_argument("--min_cnt", type=int, default=1)
 
 args = parser.parse_args()
@@ -75,12 +75,13 @@ def nli_dataset_generator(raw_path, setname):
     :param setname:
     :return: generator for [label, sentence1(premise), sentence2(hypothesis)]
     """
-
+    cnt=0
     fullpath = raw_path.format(setname)
     assert os.path.exists(fullpath)
     read_headline = False
     with open(fullpath) as f:
         for line in f:
+            print(setname, cnt)
             split_line = line.strip().split('\t')
             if split_line[0] not in ['neutral', 'contradiction', 'entailment']:
                 if read_headline: continue
@@ -90,6 +91,7 @@ def nli_dataset_generator(raw_path, setname):
                     'sentence2'), split_line.index('gold_label')
                 read_headline = True
                 continue
+            cnt += 1
             yield [split_line[labelIdx], preprocess_sentence(split_line[sent1Idx]), preprocess_sentence(split_line[sent2Idx])]
 
 
@@ -189,7 +191,6 @@ def preprocess_sentence(sent):
             else:
                 tok = [tok]
             tokens.extend(tok)
-
     else:
         raise ValueError
 

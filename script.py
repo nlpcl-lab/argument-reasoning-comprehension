@@ -1,5 +1,6 @@
 from time import time
 import os
+import numpy as np
 import tensorflow as tf
 import argparse
 from model import Model
@@ -9,7 +10,7 @@ import util
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument('--mode',choices=['esim_train', 'train', 'eval'],help='Choose the mode to run.', default='nli_train')
+parser.add_argument('--mode',choices=['esim_train', 'esim_eval','train', 'eval'],help='Choose the mode to run.', default='nli_train')
 parser.add_argument('--model',choices=['esim','main'],help='Choose the mode to run.')
 
 
@@ -27,10 +28,10 @@ parser.add_argument('--snli_raw_path',type=str,default='./data/nli/snli_1.0/snli
 parser.add_argument('--snli_bin_path',type=str,default='./data/nli/snli_1.0/snli_1.0_{}.bin')
 
 parser.add_argument("--batch_size", type=int, default=32)
-parser.add_argument("--max_enc_len", type=int, default=50)
-parser.add_argument("--learning_rate", type=float, default=5e-4)
-parser.add_argument("--max_grad_norm", type=float, default=3)
-parser.add_argument("--vocab_size", type=int, default=20000)
+parser.add_argument("--max_enc_len", type=int, default=80)
+parser.add_argument("--learning_rate", type=float, default=4e-4)
+parser.add_argument("--max_grad_norm", type=float, default=5)
+parser.add_argument("--vocab_size", type=int, default=40000)
 parser.add_argument('--l2_coeff', type=float,default=0.001)
 
 parser.add_argument("--esim_hidden_dim", type=int, default=200)
@@ -50,8 +51,12 @@ args = parser.parse_args()
 def train(model, vocab, pretrain_vardicts=None):
     print('train function called.')
     print(model.hps.data_path)
+    devpath = model.hps.data_path.replace('train', 'dev')
+    assert model.hps.data_path != devpath
+
     train_data_loader = Batcher(vocab, model.hps.data_path, args)
-    valid_data_loader = Batcher(vocab, model.hps.data_path.replace('train_', 'dev_'), args)
+    valid_data_loader = Batcher(vocab, devpath, args)
+
 
     with tf.Session(config=util.gpu_config()) as sess:
         train_logdir, dev_logdir = os.path.join(args.model_path, 'logdir/train'), os.path.join(args.model_path, 'logdir/dev')
@@ -108,20 +113,23 @@ def train(model, vocab, pretrain_vardicts=None):
 
 
 def eval(model, vocab):
-    data_loader = Batcher(vocab, model.hps.data_path.replace('train', 'test'), args)
+    datapath = model.hps.data_path.replace('train', 'test')
+    data_loader = Batcher(vocab, datapath, args)
     assert 'eval' in model.hps.mode
+    assert data_loader.single_pass
 
     acc_list = []
 
     with tf.Session(config=util.gpu_config()) as sess:
         util.load_ckpt(model.hps, model.saver, sess)
-
+        print("Running evaluation...\n")
         while True:
+            print(len(acc_list), np.mean(acc_list))
             batch = data_loader.next_batch()
             if batch == 'FINISH': break
 
             res = model.run_eval(batch, sess)
-            acc = int(res['accuracy'][0])
+            acc = float(res['accuracy'])
             acc_list.append(acc)
         print("FINAL ACCURACY: {}".format(round(100 * sum(acc_list) / len(acc_list), 2)))
 
@@ -130,6 +138,8 @@ def main():
     if 'train' not in args.mode:
         args.rnn_keep_rate = 1.0
         args.fcn_keep_rate = 1.0
+        args.batch_size = 1
+
     args.data_path = './data/nli/snli_1.0/snli_1.0_train.bin' if 'esim' in args.mode else './data/main/train_binary.bin'
 
     args.model_path = os.path.join(args.model_path, args.exp_name).format(args.model)
@@ -161,8 +171,8 @@ def main():
 
     if args.mode in ['train', 'esim_train']:
         train(model, vocab, vardicts)
-    elif args.mode == 'eval':
-        pass
+    elif args.mode in ['eval', 'esim_eval']:
+        eval(model, vocab)
 
 
 if __name__ == '__main__':
