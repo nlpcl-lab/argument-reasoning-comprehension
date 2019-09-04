@@ -21,13 +21,13 @@ This is a repository for the codes, targeting a task: SemEval 2018 Task12, the a
 
 #### Prerequistes
 
-1. Prepare the SNLI dataset and locate it to `/data/main` directory.
+1. Prepare the SNLI dataset and locate it to `/data/nli` directory.
 
    (Download:  [SNLI](<https://nlp.stanford.edu/projects/snli/>))
 
-2. Prepare the shared task dataset and locate it to `data/nli` directory.
+2. Prepare the shared task dataset and locate it to `data/main` directory.
 
-   (Download:   [SharedTask](<https://github.com/habernal/semeval2018-task12>) )
+   (Download:   [SharedTask](<https://github.com/UKPLab/argument-reasoning-comprehension-task/tree/master/mturk/annotation-task/data/exported-SemEval2018-train-dev-test>) )
 
 3. Download Glove word embedding and locate it to `/data/embed` directory.
 
@@ -71,12 +71,9 @@ python script.py --mode=eval
 │     		└──── emb/
 │ 		    		└──── glove.6B.300d.txt
 │     		└──── main/
-│ 		    		└──── train/
-│		 		    		└──── train_full.txt
-│ 		    		└──── dev/
-│		 		    		└──── dev-full.txt
-│ 		    		└──── test/
-│		 		    		└──── test-only-data.txt
+│ 		    		└──── train_full.txt
+│ 		    		└──── dev_full.txt
+│ 		    		└──── test_full.txt
 │     		└──── nli/
 │		     		└──── snli_1.0/
 │				     		└──── snli_1.0.train.txt

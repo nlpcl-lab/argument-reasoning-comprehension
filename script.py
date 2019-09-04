@@ -9,13 +9,13 @@ import util
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument('--mode',choices=['esim_train','esim_eval','train','eval'],help='Choose the mode to run.', default='nli_train')
+parser.add_argument('--mode',choices=['esim_train', 'train', 'eval'],help='Choose the mode to run.', default='nli_train')
 parser.add_argument('--model',choices=['esim','main'],help='Choose the mode to run.')
 
 
-parser.add_argument('--reasoning_train_raw_fname',type=str,default='./data/train/train-full.txt')
-parser.add_argument('--reasoning_dev_raw_fname',type=str,default='./data/train/dev-full.txt')
-parser.add_argument('--reasoning_test_raw_fname',type=str,default='./data/train/test-only-data.txt')
+parser.add_argument('--reasoning_train_raw_fname',type=str,default='./data/main/train-full.txt')
+parser.add_argument('--reasoning_dev_raw_fname',type=str,default='./data/main/dev-full.txt')
+parser.add_argument('--reasoning_test_raw_fname',type=str,default='./data/main/test-full.txt')
 parser.add_argument("--model_path", type=str, default="data/log/{}", help="Path to store the model checkpoints.")
 parser.add_argument('--pretrain_ckpt_path', type=str, default='./data/log/esim/exp/train/')
 parser.add_argument("--exp_name", type=str, default="exp", help="Path to store the model checkpoints.")
@@ -105,6 +105,25 @@ def train(model, vocab, pretrain_vardicts=None):
                 model.saver.save(sess, train_savedir, global_step=step)
                 print("training end")
                 break
+
+
+def eval(model, vocab):
+    data_loader = Batcher(vocab, model.hps.data_path.replace('train', 'test'), args)
+    assert 'eval' in model.hps.mode
+
+    acc_list = []
+
+    with tf.Session(config=util.gpu_config()) as sess:
+        util.load_ckpt(model.hps, model.saver, sess)
+
+        while True:
+            batch = data_loader.next_batch()
+            if batch == 'FINISH': break
+
+            res = model.run_eval(batch, sess)
+            acc = int(res['accuracy'][0])
+            acc_list.append(acc)
+        print("FINAL ACCURACY: {}".format(round(100 * sum(acc_list) / len(acc_list), 2)))
 
 
 def main():

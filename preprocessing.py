@@ -11,9 +11,9 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument('--mode',choices=['nli_train','nli_eval','train','eval'],help='Choose the mode to run.', default='nli_train')
 
-parser.add_argument('--reasoning_train_raw_fname',type=str,default='./data/main/train/train-full.txt')
-parser.add_argument('--reasoning_dev_raw_fname',type=str,default='./data/main/dev/dev-full.txt')
-parser.add_argument('--reasoning_test_raw_fname',type=str,default='./data/main/test/test-only-data.txt')
+parser.add_argument('--reasoning_train_raw_fname',type=str,default='./data/main/train-full.txt')
+parser.add_argument('--reasoning_dev_raw_fname',type=str,default='./data/main/dev-full.txt')
+parser.add_argument('--reasoning_test_raw_fname',type=str,default='./data/main/test-full.txt')
 parser.add_argument('--reasoning_bin_fname',type=str,default='./data/main/{}_binary.bin')
 
 parser.add_argument('--corenlp_path', type=str, default='./data/stanford_corenlp')
@@ -52,7 +52,7 @@ def read_reasoning_dataset(raw_path, setname):
                 sent1Idx, sent2Idx, reasonIdx, claimIdx = split_line.index('warrant0'), split_line.index(
                     'warrant1'), split_line.index('reason'), split_line.index('claim')
                 titleIdx, infoIdx = split_line.index('debateTitle'), split_line.index('debateInfo')
-                if setname != 'test': labelIdx = split_line.index('correctLabelW0orW1')
+                labelIdx = split_line.index('correctLabelW0orW1')
                 continue
             to_return = {
                 'w0': preprocess_sentence(split_line[sent1Idx]),
@@ -60,9 +60,10 @@ def read_reasoning_dataset(raw_path, setname):
                 'claim': preprocess_sentence(split_line[claimIdx]),
                 'reason': preprocess_sentence(split_line[reasonIdx]),
                 'title': preprocess_sentence(split_line[titleIdx]),
-                'info': preprocess_sentence(split_line[infoIdx])
+                'info': preprocess_sentence(split_line[infoIdx]),
+                'label': split_line[labelIdx]
             }
-            if setname != 'test': to_return['label'] = split_line[labelIdx]
+
 
             yield to_return
 

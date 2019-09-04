@@ -267,6 +267,13 @@ class Model():
 
         return sess.run(to_return, feed_dict=feeddict)
 
+    def run_eval(self, batch, sess):
+        feeddict = self.make_feeddict(batch)
+        to_return = {
+            'accuracy':self.acc
+        }
+        return sess.run(to_return, feed_dict=feeddict)
+
     def make_feeddict(self, batch):
         feed_dict = {}
         feed_dict[self.w0_batch] = batch.sent0_batch
