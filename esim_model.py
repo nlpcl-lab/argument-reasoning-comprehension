@@ -25,7 +25,7 @@ class ESIM:
         self.vocab_size = self.hps.vocab_size
         self.emb_dim = self.hps.embed_dim
         self.hidden_dim = self.hps.esim_hidden_dim
-        self.fcn_hidden_dim = self.hps.fcn_hidden_dim
+        self.fcn_hidden_dim = self.hps.esim_fcn_hidden_dim
 
         self.lr = self.hps.learning_rate
         self.l2_coeff = self.hps.l2_coeff

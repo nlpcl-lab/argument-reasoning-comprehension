@@ -31,16 +31,17 @@ parser.add_argument("--max_enc_len", type=int, default=50)
 parser.add_argument("--learning_rate", type=float, default=5e-4)
 parser.add_argument("--max_grad_norm", type=float, default=3)
 parser.add_argument("--vocab_size", type=int, default=20000)
-parser.add_argument('--l2_coeff', type=float,default=0.1)
+parser.add_argument('--l2_coeff', type=float,default=0.001)
 
 parser.add_argument("--esim_hidden_dim", type=int, default=200)
 parser.add_argument("--main_hidden_dim", type=int, default=100)
-parser.add_argument("--fcn_hidden_dim", type=int, default=128)
+parser.add_argument("--esim_fcn_hidden_dim", type=int, default=128)
+parser.add_argument("--main_fcn_hidden_dim", type=int, default=600)
 
 parser.add_argument("--decoder_hidden_dim", type=int, default=384)
 parser.add_argument("--rnn_keep_rate", type=float, default=0.8)
 parser.add_argument("--fcn_keep_rate", type=float, default=0.8)
-parser.add_argument("--max_epoch", type=int, default=20)
+parser.add_argument("--max_epoch", type=int, default=10)
 parser.add_argument("--gpu_nums", type=str, default='0')
 
 

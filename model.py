@@ -25,7 +25,7 @@ class Model():
         self.emb_dim = self.hps.embed_dim
         self.hidden_dim = self.hps.main_hidden_dim
         self.esim_hidden_dim = self.hps.esim_hidden_dim
-        self.fcn_hidden_dim = self.hps.fcn_hidden_dim
+        self.fcn_hidden_dim = self.hps.main_fcn_hidden_dim
 
         self.lr = self.hps.learning_rate
         self.l2_coeff = self.hps.l2_coeff
@@ -196,7 +196,7 @@ class Model():
             self.cost, self.acc = self._build_ops(self.logits, self.label)
             self.train_op = self.optimization_with_esim_freezing()
 
-    def _fully_connected(self,input_data,output_dim, names):
+    def _fully_connected(self,input_data,output_dim, names, use_activation=True):
         regularizer = tf.contrib.layers.l2_regularizer(scale=self.l2_coeff)
 
         dense_layer = tf.layers.dense(input_data, output_dim, activation=None,
@@ -204,7 +204,11 @@ class Model():
                                  kernel_regularizer=regularizer,
                                  name=names+'dense')
         drop_layer = tf.nn.dropout(dense_layer, keep_prob=self.fcn_keeprate, name=names+'drop')
-        activation_layer = tf.nn.relu(drop_layer,name=names+'relu')
+
+        if use_activation:
+            activation_layer = tf.nn.relu(drop_layer, name=names + 'relu')
+        else:
+            activation_layer = drop_layer
         return activation_layer
 
     def _build_ops(self,logits,targets):
