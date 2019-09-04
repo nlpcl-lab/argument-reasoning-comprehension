@@ -197,9 +197,11 @@ class Model():
             self.train_op = self.optimization_with_esim_freezing()
 
     def _fully_connected(self,input_data,output_dim, names):
+        regularizer = tf.contrib.layers.l2_regularizer(scale=self.l2_coeff)
+
         dense_layer = tf.layers.dense(input_data, output_dim, activation=None,
                                  kernel_initializer=tf.contrib.layers.xavier_initializer(),
-                                 kernel_regularizer=tf.contrib.layers.l2_regularizer(scale=self.l2_coeff),
+                                 kernel_regularizer=regularizer,
                                  name=names+'dense')
         drop_layer = tf.nn.dropout(dense_layer, keep_prob=self.fcn_keeprate, name=names+'drop')
         activation_layer = tf.nn.relu(drop_layer,name=names+'relu')
@@ -209,14 +211,11 @@ class Model():
         cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=targets), name='loss')
         tf.summary.scalar('prediction_loss', cost)
 
-        # weights = [v for v in tf.trainable_variables() if
-        #            ('kernel' in v.name) or ('layer' in v.name) or ('w' in v.name)]
-        #
-        # regularization_cost = tf.add_n([tf.nn.l2_loss(w) for w in weights])
-        #
-        # tf.summary.scalar('regularization_loss', regularization_cost)
+        regularization_cost = tf.losses.get_regularization_loss()
 
-        cost = cost #+ self.l2_coeff * regularization_cost
+        tf.summary.scalar('regularization_loss', regularization_cost)
+
+        cost = cost + regularization_cost
 
         acc = tf.reduce_mean(tf.cast(tf.equal(tf.argmax(targets,1),tf.argmax(logits,1)),tf.float32))
 
