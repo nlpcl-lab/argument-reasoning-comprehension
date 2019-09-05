@@ -152,6 +152,7 @@ class Model():
             claim_enc_fw, claim_enc_bw = self._build_cells(self.rnn_keeprate, scope='encode_claim', hidden_dim=self.hidden_dim)
             reason_enc_fw, reason_enc_bw = self._build_cells(self.rnn_keeprate, scope='encode_reason', hidden_dim=self.hidden_dim)
             w_enc_fw, w_enc_bw = self._build_cells(self.rnn_keeprate, scope='encode_warrant', hidden_dim=self.hidden_dim)
+
             with tf.variable_scope('ciam_enc'):
                 claim_outputs, claim_states = tf.nn.bidirectional_dynamic_rnn(claim_enc_fw, claim_enc_bw, self.emb_claim,
                                                                               dtype=tf.float32)
@@ -187,23 +188,27 @@ class Model():
             h0 = self._fully_connected(concat0, self.fcn_hidden_dim, 'h0_0')
             h1 = self._fully_connected(concat1, self.fcn_hidden_dim, 'h1_0')
             with tf.variable_scope('w0_prob'):
-                w0_prob = self._fully_connected(h0, 1, 'h0_1')
+                w0_prob = self._fully_connected(h0, 1, 'h0_1', use_dropout=False, use_activation=False)
             with tf.variable_scope('w1_prob'):
-                w1_prob = self._fully_connected(h1, 1, 'h0_1')
+                w1_prob = self._fully_connected(h1, 1, 'h0_1', use_dropout=False, use_activation=False)
             with tf.variable_scope('logits'):
                 self.logits = tf.concat([w0_prob, w1_prob], axis=1, name='logits')
 
-            self.cost, self.acc = self._build_ops(self.logits, self.label)
+            self._build_ops()
             self.train_op = self.optimization_with_esim_freezing()
 
-    def _fully_connected(self,input_data,output_dim, names, use_activation=True):
+    def _fully_connected(self,input_data,output_dim, names, use_activation=True, use_dropout=True):
         regularizer = tf.contrib.layers.l2_regularizer(scale=self.l2_coeff)
 
         dense_layer = tf.layers.dense(input_data, output_dim, activation=None,
                                  kernel_initializer=tf.contrib.layers.xavier_initializer(),
                                  kernel_regularizer=regularizer,
                                  name=names+'dense')
-        drop_layer = tf.nn.dropout(dense_layer, keep_prob=self.fcn_keeprate, name=names+'drop')
+
+        if use_dropout:
+            drop_layer = tf.nn.dropout(dense_layer, keep_prob=self.fcn_keeprate, name=names+'drop')
+        else:
+            drop_layer = dense_layer
 
         if use_activation:
             activation_layer = tf.nn.relu(drop_layer, name=names + 'relu')
@@ -211,30 +216,27 @@ class Model():
             activation_layer = drop_layer
         return activation_layer
 
-    def _build_ops(self,logits,targets):
-        cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=targets), name='loss')
-        tf.summary.scalar('prediction_loss', cost)
+    def _build_ops(self):
+        self.prediction_cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=self.logits, labels=self.label), name='loss')
+        tf.summary.scalar('prediction_loss', self.prediction_cost)
 
-        regularization_cost = tf.losses.get_regularization_loss()
+        self.regularization_cost = tf.losses.get_regularization_loss()
 
-        tf.summary.scalar('regularization_loss', regularization_cost)
+        tf.summary.scalar('regularization_loss', self.regularization_cost)
 
-        cost = cost + regularization_cost
+        self.cost = self.prediction_cost + self.regularization_cost
 
-        acc = tf.reduce_mean(tf.cast(tf.equal(tf.argmax(targets,1),tf.argmax(logits,1)),tf.float32))
+        self.acc = tf.reduce_mean(tf.cast(tf.equal(tf.argmax(self.label, 1), tf.argmax(self.logits, 1)), tf.float32))
 
-        tf.summary.scalar('acc', acc)
-        tf.summary.scalar('cost',cost)
-        return cost, acc
+        tf.summary.scalar('acc', self.acc)
+        tf.summary.scalar('cost',self.cost)
+
 
     def optimization_with_esim_freezing(self):
         optimizer = tf.train.AdamOptimizer(learning_rate=self.lr)
         tvars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, "mainmodel/")
         gradients = tf.gradients(self.cost, tvars, aggregation_method=tf.AggregationMethod.EXPERIMENTAL_TREE)
         grads, global_norm = tf.clip_by_global_norm(gradients, self.hps.max_grad_norm)
-
-        # gradients_freeze = tf.gradients(loss_to_minimize, tvars, aggregation_method=tf.AggregationMethod.EXPERIMENTAL_TREE)
-        # grads_freeze, global_norm_freeze = tf.clip_by_global_norm(gradients_freeze, self.hps.max_grad_norm)
 
         tf.summary.scalar('global_norm', global_norm)
 

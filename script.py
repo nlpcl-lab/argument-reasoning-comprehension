@@ -27,19 +27,19 @@ parser.add_argument('--embed_dim', type=int, default=300)
 parser.add_argument('--snli_raw_path',type=str,default='./data/nli/snli_1.0/snli_1.0_{}.txt')
 parser.add_argument('--snli_bin_path',type=str,default='./data/nli/snli_1.0/snli_1.0_{}.bin')
 
-parser.add_argument("--batch_size", type=int, default=32)
+parser.add_argument("--esim_batch_size", type=int, default=32)
+parser.add_argument("--main_batch_size", type=int, default=25)
 parser.add_argument("--max_enc_len", type=int, default=80)
-parser.add_argument("--learning_rate", type=float, default=4e-4)
+parser.add_argument("--learning_rate", type=float, default=5e-4)
 parser.add_argument("--max_grad_norm", type=float, default=5)
 parser.add_argument("--vocab_size", type=int, default=40000)
-parser.add_argument('--l2_coeff', type=float,default=0.001)
+parser.add_argument('--l2_coeff', type=float,default=0.0005)
 
 parser.add_argument("--esim_hidden_dim", type=int, default=200)
 parser.add_argument("--main_hidden_dim", type=int, default=100)
 parser.add_argument("--esim_fcn_hidden_dim", type=int, default=128)
 parser.add_argument("--main_fcn_hidden_dim", type=int, default=600)
 
-parser.add_argument("--decoder_hidden_dim", type=int, default=384)
 parser.add_argument("--rnn_keep_rate", type=float, default=0.8)
 parser.add_argument("--fcn_keep_rate", type=float, default=0.8)
 parser.add_argument("--max_epoch", type=int, default=10)
@@ -52,11 +52,15 @@ def train(model, vocab, pretrain_vardicts=None):
     print('train function called.')
     print(model.hps.data_path)
     devpath = model.hps.data_path.replace('train', 'dev')
-    assert model.hps.data_path != devpath
+    assert model.hps.data_path != devpath and os.path.exists(model.hps.data_path) and os.path.exists(devpath)
 
     train_data_loader = Batcher(vocab, model.hps.data_path, args)
     valid_data_loader = Batcher(vocab, devpath, args)
 
+    print(train_data_loader.example_queue.qsize())
+    print(valid_data_loader.example_queue.qsize())
+    print(train_data_loader.batch_queue.qsize())
+    print(valid_data_loader.batch_queue.qsize())
 
     with tf.Session(config=util.gpu_config()) as sess:
         train_logdir, dev_logdir = os.path.join(args.model_path, 'logdir/train'), os.path.join(args.model_path, 'logdir/dev')
@@ -92,7 +96,7 @@ def train(model, vocab, pretrain_vardicts=None):
 
             end_time = time()
             print("{} epoch, {} step, {}sec, {} loss".format(int(step * model.hps.batch_size / sample_per_epoch), step,
-                                                             round(end_time - beg_time, 3), round(loss, 3)))
+                                                             round(end_time - beg_time, 3), round(float(loss), 3)))
             summary_writer1.add_summary(summaries, step)
 
             if step % 5 == 0:
@@ -150,7 +154,13 @@ def main():
             raise ValueError
         os.makedirs(args.model_path)
 
-    if 'esim' in args.mode: assert 'esim' in args.model
+    if 'esim' in args.mode:
+        args.batch_size = args.esim_batch_size
+        assert 'esim' in args.model
+    else:
+        args.rnn_keep_rate = 1.0
+        args.fcn_keep_rate = 1.0
+        args.batch_size = args.main_batch_size
 
     print("Default model path: {}".format(args.model_path))
 

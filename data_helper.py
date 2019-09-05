@@ -20,7 +20,7 @@ def sample_generator(bin_fname, single_pass=False):
         while True:
             len_bytes = reader.read(8)
             if not len_bytes:
-                print("Reading one file is end!")
+                #print("Reading one file is end!")
                 break  # Break if file is end
             str_len = struct.unpack('q', len_bytes)[0]
             example_str = struct.unpack('%ds' % str_len, reader.read(str_len))[0]
@@ -163,7 +163,7 @@ class Batcher:
                 return 'FINISH'
             else:
                 print("Batch queue is empty. waiting....")
-            #     raise ValueError("Unexpected finish of batching.")
+                raise ValueError("Unexpected finish of batching.")
         batch = self.batch_queue.get()
         return batch
 

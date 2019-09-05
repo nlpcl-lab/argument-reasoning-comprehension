@@ -85,11 +85,11 @@ python script.py --mode=eval --model=main
 
 
 
-#### Results (TBD)
+#### Results
 
 ```
-SNLI testset accuracy: %
-Shared task testset  accuracy: %
+SNLI testset accuracy: 83.83%
+Shared task testset  accuracy: 56.53%
 ```
 
 
