@@ -88,7 +88,8 @@ python script.py --mode=eval --model=main
 #### Results (TBD)
 
 ```
-Testset accuracy: %
+SNLI testset accuracy: %
+Shared task testset  accuracy: %
 ```
 
 

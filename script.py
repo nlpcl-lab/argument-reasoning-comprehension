@@ -103,7 +103,7 @@ def train(model, vocab, pretrain_vardicts=None):
                 print("[VALID] {} loss".format(round(loss, 3)))
                 summary_writer2.add_summary(summaries, step)
 
-            if step == 10 or step % 2000 == 0:
+            if step == 10 or step % 10000 == 0:
                 model.saver.save(sess, train_savedir, global_step=step)
 
             if int(step * model.hps.batch_size / sample_per_epoch) > model.hps.max_epoch:
