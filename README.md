@@ -89,7 +89,7 @@ python script.py --mode=eval --model=main
 
 ```
 SNLI testset accuracy: 83.83%
-Shared task testset  accuracy: 56.53%
+Shared task testset accuracy: 56.53%
 ```
 
 
