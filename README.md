@@ -15,6 +15,7 @@ This is a repository for the codes, targeting a task: SemEval 2018 Task12, the a
 
 - tensorflow-gpu==1.8
 - numpy==1.16.2
+- nltk==3.4.5
 - stanfordcorenlp=3.9.1.1 (optional)
 
 
