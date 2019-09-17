@@ -104,7 +104,3 @@ Shared task testset accuracy: 56.53%
 * Dataset to train Chen's sentence embedding model [[page]](https://www.nyu.edu/projects/bowman/multinli/) [[paper]](http://aclweb.org/anthology/N18-1101)
 
 * nyu-mll's ESIM model repository [[github]](https://github.com/nyu-mll/multiNLI/blob/master/python/models/esim.py)
-
-## Contributor
-
-[ChaeHun](http://nlp.kaist.ac.kr/~ddehun)
